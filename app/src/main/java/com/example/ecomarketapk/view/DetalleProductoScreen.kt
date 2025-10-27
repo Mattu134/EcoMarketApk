@@ -84,7 +84,6 @@ fun DetalleProductoScreen(
                     .verticalScroll(rememberScrollState()), // ✅ Scroll completo
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Imagen principal
                 Image(
                     painter = rememberAsyncImagePainter(p.imagen),
                     contentDescription = p.nombre,
@@ -94,8 +93,6 @@ fun DetalleProductoScreen(
                         .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop
                 )
-
-                // Imágenes adicionales simuladas
                 val imagenesAdicionales = listOf(
                     p.imagen,
                     "https://images.unsplash.com/photo-1565958011705-44e2119023b2?auto=format&fit=crop&w=400&q=60",
@@ -119,20 +116,14 @@ fun DetalleProductoScreen(
                         )
                     }
                 }
-
-                // Descripción extendida
                 Text(
                     text = p.descripcion ?: "Sin descripción disponible.",
                     style = MaterialTheme.typography.bodyMedium
                 )
-
-                // Precio
                 Text(
                     text = "Precio: $${String.format(Locale("es", "CL"), "%,.0f", p.precio)}",
                     style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.primary)
                 )
-
-                // Botón para agregar al carrito
                 Button(
                     onClick = {
                         carritoViewModel.agregar(p)
@@ -143,14 +134,12 @@ fun DetalleProductoScreen(
                 ) {
                     Text("Agregar al carrito")
                 }
-
-                // Opiniones
                 Text(
                     "Opiniones de usuarios",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
 
-                OpinionesList() // ✅ Versión con estrellas variables y scroll habilitado
+                OpinionesList()
             }
         } ?: Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Producto no encontrado")

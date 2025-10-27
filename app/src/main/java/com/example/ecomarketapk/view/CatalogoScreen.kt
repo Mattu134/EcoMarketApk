@@ -75,8 +75,6 @@ fun CatalogoScreen(
     val context = LocalContext.current
     val productos by viewModel.productos.collectAsState()
     val loading by viewModel.loading.collectAsState()
-
-    // Contador del carrito
     val carritoCount by remember { derivedStateOf { carritoViewModel.carrito.size } }
 
     var searchQuery by remember { mutableStateOf("") }
@@ -144,8 +142,6 @@ fun CatalogoScreen(
     ) { padding ->
 
         Column(Modifier.padding(padding)) {
-
-            // 🔹 Barra de búsqueda
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -154,8 +150,6 @@ fun CatalogoScreen(
                     .fillMaxWidth()
                     .padding(8.dp)
             )
-
-            // 🔹 Botones de categorías
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -169,8 +163,6 @@ fun CatalogoScreen(
                     CategoryButton(cat, categoriaSeleccionada == cat) { categoriaSeleccionada = cat }
                 }
             }
-
-            // 🔹 Productos
             if (loading) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -229,7 +221,6 @@ fun ProductoCardGrid(producto: Producto, onAgregar: () -> Unit, onVerDetalle: ()
                 .padding(8.dp)
                 .fillMaxWidth()
         ) {
-            // 🔹 Imagen con altura fija y bordes iguales
             Image(
                 painter = rememberAsyncImagePainter(model = producto.imagen),
                 contentDescription = producto.nombre,
@@ -241,23 +232,17 @@ fun ProductoCardGrid(producto: Producto, onAgregar: () -> Unit, onVerDetalle: ()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            // 🔹 Nombre
             Text(
                 text = producto.nombre,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2
             )
-
-            // 🔹 Precio
             Text(
                 text = "$${String.format(Locale("es", "CL"), "%,.0f", producto.precio)}",
                 style = MaterialTheme.typography.bodyMedium
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            // 🔹 Botón "Agregar"
             Button(
                 onClick = onAgregar,
                 modifier = Modifier

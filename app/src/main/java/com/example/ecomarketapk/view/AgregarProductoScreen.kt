@@ -76,7 +76,6 @@ fun AgregarProductoScreen(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Campo: Nombre
             OutlinedTextField(
                 value = nombre,
                 onValueChange = { nombre = it },
@@ -85,7 +84,6 @@ fun AgregarProductoScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Campo: Precio (solo numérico)
             OutlinedTextField(
                 value = precio,
                 onValueChange = { if (it.all { c -> c.isDigit() || c == '.' }) precio = it },
@@ -95,7 +93,6 @@ fun AgregarProductoScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Campo: Descripción
             OutlinedTextField(
                 value = descripcion,
                 onValueChange = { descripcion = it },
@@ -104,7 +101,6 @@ fun AgregarProductoScreen(navController: NavController) {
                 maxLines = 3
             )
 
-            // Campo: URL Imagen
             OutlinedTextField(
                 value = imagen,
                 onValueChange = { imagen = it },
@@ -113,7 +109,6 @@ fun AgregarProductoScreen(navController: NavController) {
                 singleLine = true
             )
 
-            // Campo: Categoría con menú desplegable
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
@@ -144,10 +139,8 @@ fun AgregarProductoScreen(navController: NavController) {
                 }
             }
 
-            // Botón Guardar
             Button(
                 onClick = {
-                    // Validación realista
                     when {
                         nombre.isBlank() || precio.isBlank() || descripcion.isBlank() || imagen.isBlank() || categoria == "Selecciona una categoría" -> {
                             Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
@@ -158,11 +151,8 @@ fun AgregarProductoScreen(navController: NavController) {
                         }
 
                         else -> {
-                            // Aquí iría la lógica para guardar el producto (simulada)
                             mensajeExito = true
                             Toast.makeText(context, "Producto agregado correctamente", Toast.LENGTH_SHORT).show()
-
-                            // Limpieza del formulario
                             nombre = ""
                             precio = ""
                             descripcion = ""
@@ -175,8 +165,6 @@ fun AgregarProductoScreen(navController: NavController) {
             ) {
                 Text("Guardar Producto")
             }
-
-            // Mensaje visual de confirmación (opcional animado)
             if (mensajeExito) {
                 LaunchedEffect(Unit) {
                     delay(2000)

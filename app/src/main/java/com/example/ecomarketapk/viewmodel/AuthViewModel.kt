@@ -9,13 +9,9 @@ import com.example.ecomarketapk.utils.ValidationUtils
 
 class AuthViewModel : ViewModel() {
 
-    // Mensaje observable (se puede mostrar en el UI)
     var mensaje = mutableStateOf("")
-
-    // Usuario actual (para usarlo en HomeScreen, etc.)
     var usuarioActual = mutableStateOf<Usuario?>(null)
 
-    // 🔹 Registrar nuevo usuario
     fun registrar(
         context: Context,
         nombre: String,
@@ -24,7 +20,6 @@ class AuthViewModel : ViewModel() {
         rut: String,
         password: String
     ): Boolean {
-        // Validaciones básicas
         if (nombre.isEmpty() || email.isEmpty() || direccion.isEmpty() || rut.isEmpty() || password.isEmpty()) {
             mensaje.value = "Todos los campos son obligatorios"
             return false
@@ -35,7 +30,6 @@ class AuthViewModel : ViewModel() {
             return false
         }
 
-        // Crear el objeto Usuario (debes asegurarte que coincida con tu modelo)
         val nuevoUsuario = Usuario(
             nombre = nombre,
             email = email,
@@ -45,13 +39,12 @@ class AuthViewModel : ViewModel() {
             rol = "cliente"
         )
 
-        // Llamar al repositorio
         val exito = UserRepository.registrarUsuario(context, nuevoUsuario)
         if (exito) {
-            mensaje.value = "✅ Registro exitoso"
+            mensaje.value = "Registro exitoso"
             return true
         } else {
-            mensaje.value = "⚠️ El email o RUT ya están registrados"
+            mensaje.value = "El email o RUT ya están registrados"
             return false
         }
     }
@@ -71,10 +64,10 @@ class AuthViewModel : ViewModel() {
         val usuario = UserRepository.login(context, email, password)
         return if (usuario != null) {
             usuarioActual.value = usuario
-            mensaje.value = "Inicio de sesión exitoso ✅"
+            mensaje.value = "Inicio de sesión exitoso"
             true
         } else {
-            mensaje.value= "Credenciales incorrectas ⚠️"
+            mensaje.value= "Credenciales incorrectas "
             false
         }
     }

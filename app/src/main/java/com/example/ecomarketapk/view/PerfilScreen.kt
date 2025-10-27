@@ -48,8 +48,6 @@ import com.example.ecomarketapk.viewmodel.AuthViewModel
 fun PerfilScreen(navController: NavController, authViewModel: AuthViewModel) {
     val context = LocalContext.current
     val usuarioActual = authViewModel.usuarioActual.value
-
-    // Campos del perfil (pre-cargados si existe usuarioActual)
     var email by remember { mutableStateOf(usuarioActual?.email ?: "") }
     var nombre by remember { mutableStateOf(usuarioActual?.nombre ?: "") }
     var direccion by remember { mutableStateOf(usuarioActual?.direccion ?: "") }
@@ -86,19 +84,17 @@ fun PerfilScreen(navController: NavController, authViewModel: AuthViewModel) {
         ) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Imagen de perfil
             Image(
                 painter = rememberAsyncImagePainter("https://cdn-icons-png.flaticon.com/512/3177/3177440.png"),
                 contentDescription = "Avatar",
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
-                    .clickable { /* cambiar imagen (futuro) */ }
+                    .clickable { }
             )
             Text("Toca la imagen para cambiarla", style = MaterialTheme.typography.bodySmall)
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campos de perfil
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -131,8 +127,6 @@ fun PerfilScreen(navController: NavController, authViewModel: AuthViewModel) {
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            // 🔹 Botón Guardar Cambios
             Button(
                 onClick = {
                     if (usuarioActual != null) {
@@ -161,8 +155,6 @@ fun PerfilScreen(navController: NavController, authViewModel: AuthViewModel) {
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            // 🔹 Botón Cerrar Sesión
             TextButton(onClick = {
                 authViewModel.usuarioActual.value = null
                 navController.navigate("login") {

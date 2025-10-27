@@ -51,7 +51,6 @@ object UserRepository {
         }
     }
 
-    // 🔹 Registrar usuario nuevo
     fun registrarUsuario(context: Context, nuevoUsuario: Usuario): Boolean {
         val usuarios = loadUsers(context)
         if (usuarios.any { it.email == nuevoUsuario.email || it.rut == nuevoUsuario.rut }) {
@@ -62,19 +61,15 @@ object UserRepository {
         return true
     }
 
-    // 🔹 Iniciar sesión
     fun login(context: Context, email: String, password: String): Usuario? {
         val usuarios = loadUsers(context)
         return usuarios.find { it.email == email && it.password == password }
     }
 
-    // 🔹 Obtener todos los usuarios
     fun obtenerUsuarios(context: Context): List<Usuario> = loadUsers(context)
 
-    // 🔹 Eliminar todos los usuarios (solo para pruebas)
     fun limpiarUsuarios(context: Context) = saveUsers(context, emptyList())
 
-    // 🔹 Actualizar usuario existente (para PerfilScreen)
     fun actualizarUsuario(context: Context, usuarioActualizado: Usuario): Boolean {
         val usuarios = loadUsers(context)
         val index = usuarios.indexOfFirst { it.email == usuarioActualizado.email }

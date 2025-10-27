@@ -6,7 +6,7 @@ object ValidationUtils {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
-    // Validación de RUT Chileno (Algoritmo Módulo 11)
+    // Validación de RUT
     fun isRutValid(rut: String): Boolean {
         val rutLimpio = rut.replace(Regex("[.-]"), "").uppercase()
         if (rutLimpio.length !in 8..9) return false

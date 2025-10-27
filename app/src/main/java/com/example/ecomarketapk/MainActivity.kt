@@ -35,13 +35,10 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-
-                    // ViewModels
                     val authViewModel: AuthViewModel = viewModel()
                     val catalogoViewModel: CatalogoViewModel = viewModel()
                     val carritoViewModel: CarritoViewModel = viewModel()
 
-                    // Navegación
                     NavHost(
                         navController = navController,
                         startDestination = "login"

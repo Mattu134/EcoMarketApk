@@ -32,8 +32,6 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
-
-    // 🔹 Borra automáticamente el mensaje después de 3 segundos
     val mensaje = viewModel.mensaje.value
     LaunchedEffect(mensaje) {
         if (mensaje.isNotEmpty()) {
@@ -92,8 +90,6 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
         }, modifier = Modifier.fillMaxWidth()) {
             Text("Entrar")
         }
-
-        // 🔹 Botón para ir al registro
         TextButton(
             onClick = {
                 viewModel.mensaje.value = "" // limpiar mensajes previos
@@ -105,8 +101,6 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
         ) {
             Text("¿No tienes cuenta? Crear cuenta")
         }
-
-        // 🔹 Mensaje temporal (éxito o error)
         if (mensaje.isNotEmpty()) {
             Text(
                 text = mensaje,

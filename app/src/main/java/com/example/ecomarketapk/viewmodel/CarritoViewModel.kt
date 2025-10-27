@@ -6,7 +6,6 @@ import com.example.ecomarketapk.model.Producto
 
 class CarritoViewModel : ViewModel() {
 
-    // 🔹 Mapa: Producto → Cantidad
     val carrito = mutableStateMapOf<Producto, Int>()
 
     fun agregar(producto: Producto) {
