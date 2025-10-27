@@ -1,0 +1,50 @@
+[
+  {
+    "nombre": "Matías Robles",
+    "email": "matias.admin@example.com",
+    "direccion": "Av. Los Alerces 123",
+    "rut": "11111111-1",
+    "password": "admin123",
+    "rol": "admin"
+  },
+  {
+    "nombre": "Lucía Pérez",
+    "email": "lucia.admin@example.com",
+    "direccion": "Calle Los Pinos 456",
+    "rut": "22222222-2",
+    "password": "admin456",
+    "rol": "admin"
+  },
+  {
+    "nombre": "Carlos Soto",
+    "email": "carlos.admin@example.com",
+    "direccion": "Pasaje Las Rosas 789",
+    "rut": "33333333-3",
+    "password": "admin789",
+    "rol": "admin"
+  },
+  {
+    "nombre": "Fernanda Díaz",
+    "email": "fer.cliente@example.com",
+    "direccion": "Av. Providencia 101",
+    "rut": "44444444-4",
+    "password": "user123",
+    "rol": "cliente"
+  },
+  {
+    "nombre": "Diego Ruiz",
+    "email": "diego.cliente@example.com",
+    "direccion": "Calle Central 202",
+    "rut": "55555555-5",
+    "password": "user456",
+    "rol": "cliente"
+  },
+  {
+    "nombre": "Valentina Torres",
+    "email": "vale.cliente@example.com",
+    "direccion": "Camino Real 303",
+    "rut": "66666666-6",
+    "password": "user789",
+    "rol": "cliente"
+  }
+]

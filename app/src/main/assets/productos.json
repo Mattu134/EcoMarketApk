@@ -1,0 +1,59 @@
+[
+  {
+    "id": 1,
+    "nombre": "Leche Entera Soprole 1L",
+    "descripcion": "Leche entera ultrapasteurizada, rica en calcio y proteínas.",
+    "precio": 1390.0,
+    "imagen": "https://tse4.mm.bing.net/th/id/OIP.0aRyxMmMcko9KAKNJ4FueQHaHa?rs=1&pid=ImgDetMain&o=7&rm=3",
+    "categoria": "Lácteos"
+  },
+  {
+    "id": 2,
+    "nombre": "Pan de Molde Ideal Integral 700g",
+    "descripcion": "Pan integral suave y nutritivo, fuente de fibra natural.",
+    "precio": 2590.0,
+    "imagen": "https://th.bing.com/th/id/R.9efa84727798aca39ccfc3ecf62b6445?rik=3cXgCeC9zZQdGw&riu=http%3a%2f%2fimages.lider.cl%2fwmtcl%3fsource%3durl%5bfile%3a%2fproductos%2f902387a.jpg%5d%26sink&ehk=iju1ufiPjcBadI5YN4S0H57cWKkr093tPLCbFK5ILi4%3d&risl=&pid=ImgRaw&r=0",
+    "categoria": "Panadería"
+  },
+  {
+    "id": 3,
+    "nombre": "Aceite Maravilla Chef 1L",
+    "descripcion": "Aceite vegetal 100% maravilla, ideal para cocinar y freír.",
+    "precio": 3290.0,
+    "imagen": "https://supermimi.cl/wp-content/uploads/2024/07/Aceite-Chef-1-lts.jpg",
+    "categoria": "Aceites"
+  },
+  {
+    "id": 4,
+    "nombre": "Arroz Tucapel Grado 2 1kg",
+    "descripcion": "Arroz largo fino de excelente textura y sabor.",
+    "precio": 1590.0,
+    "imagen": "https://www.prisa.cl/media/cache/attachment/filter/product_gallery_main/b6b1adc76b36bd6a7f81344215e93277/22858/63dab0c8453a9646927283.png",
+    "categoria": "Cereales"
+  },
+  {
+    "id": 5,
+    "nombre": "Detergente OMO Matic 3L",
+    "descripcion": "Detergente líquido concentrado para lavadora, elimina manchas difíciles.",
+    "precio": 8990.0,
+    "imagen": "https://supermercadovirtual.cl/wp-content/uploads/2019/05/omo-matic-3lts-324x324-1-300x267.png",
+    "categoria": "Limpieza"
+  },
+  {
+    "id": 6,
+    "nombre": "Manzanas Rojas 1kg",
+    "descripcion": "Manzanas frescas, crujientes y dulces, ideales para snack o postres.",
+    "precio": 2190.0,
+    "imagen": "https://tse3.mm.bing.net/th/id/OIP.1OdStDD_KNTG_5c1mNUaLQHaHa?rs=1&pid=ImgDetMain&o=7&rm=3",
+    "categoria": "Frutas"
+  },
+  {
+    "id": 7,
+    "nombre": "Atún San José en Agua 170g",
+    "descripcion": "Atún en trozos conservado en agua, bajo en grasa y alto en proteínas.",
+    "precio": 1790.0,
+    "imagen": "https://http2.mlstatic.com/D_NQ_NP_754073-MLC74111664738_012024-O.webp",
+    "categoria": "Conservas"
+  }
+
+]
