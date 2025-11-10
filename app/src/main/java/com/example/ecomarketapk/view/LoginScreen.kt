@@ -1,5 +1,6 @@
 package com.example.ecomarketapk.view
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -21,11 +23,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.ecomarketapk.R
 import com.example.ecomarketapk.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
+
 
 @Composable
 fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
@@ -47,10 +52,13 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "EcoMarket",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 24.dp)
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Logo",
+            modifier = Modifier
+                .size(200.dp)
+                .padding(bottom = 50.dp)
+
         )
 
         Text("Inicio de Sesión", style = MaterialTheme.typography.titleLarge)
@@ -77,7 +85,7 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
             if (viewModel.login(context, email, password)) {
                 val usuario = viewModel.usuarioActual.value
                 if (usuario?.rol == "admin") {
-                    navController.navigate("backoffice") {
+                    navController.navigate("catalogo") {
                         popUpTo("login") { inclusive = true }
                     }
                 } else {
@@ -85,14 +93,14 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
                         popUpTo("login") { inclusive = true }
                     }
                 }
-                viewModel.mensaje.value = "" // limpiar mensaje tras navegar
+                viewModel.mensaje.value = ""
             }
         }, modifier = Modifier.fillMaxWidth()) {
             Text("Entrar")
         }
         TextButton(
             onClick = {
-                viewModel.mensaje.value = "" // limpiar mensajes previos
+                viewModel.mensaje.value = ""
                 navController.navigate("register") {
                     popUpTo("login") { inclusive = false }
                 }

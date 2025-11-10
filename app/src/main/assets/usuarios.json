@@ -8,9 +8,27 @@
     "rol": "admin"
   },
   {
+    "nombre": "admin",
+    "email": "admin@example.com",
+    "direccion": "Varas123",
+    "rut": "11111111-1",
+    "password": "123",
+    "rol": "admin"
+
+  },
+  {
+    "nombre": "cliente1",
+    "email": "cliente1@example.com",
+    "direccion": "Varas123",
+    "rut": "11111111-1",
+    "password": "123",
+    "rol": "cliente"
+
+  },
+  {
     "nombre": "Lucía Pérez",
     "email": "lucia.admin@example.com",
-    "direccion": "Calle Los Pinos 456"
+    "direccion": "Calle Los Pinos 456",
     "rut": "22222222-2",
     "password": "admin456",
     "rol": "admin"

@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -59,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.ecomarketapk.model.Producto
+import com.example.ecomarketapk.viewmodel.AuthViewModel
 import com.example.ecomarketapk.viewmodel.CarritoViewModel
 import com.example.ecomarketapk.viewmodel.CatalogoViewModel
 import kotlinx.coroutines.delay
@@ -69,13 +71,17 @@ import java.util.Locale
 fun CatalogoScreen(
     navController: NavController,
     viewModel: CatalogoViewModel,
-    carritoViewModel: CarritoViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    carritoViewModel: CarritoViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    authViewModel: AuthViewModel
 ) {
     val context = LocalContext.current
     val productos by viewModel.productos.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val carritoCount by remember { derivedStateOf { carritoViewModel.carrito.size } }
-
+    //Validacion para ver si es ADMIN
+    val esAdmin by remember {
+        derivedStateOf { authViewModel.usuarioActual.value?.rol == "admin" }
+    }
     var searchQuery by remember { mutableStateOf("") }
     var categoriaSeleccionada by remember { mutableStateOf<String?>(null) }
     var showToast by remember { mutableStateOf(false) }
@@ -113,10 +119,9 @@ fun CatalogoScreen(
                                     .offset(x = (-4).dp, y = 4.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primary
-                                ) { Box(Modifier.size(18.dp)) }
+                                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
+                                    Box(Modifier.size(18.dp))
+                                }
                                 Text(
                                     text = carritoCount.toString(),
                                     color = MaterialTheme.colorScheme.onPrimary,
@@ -142,6 +147,15 @@ fun CatalogoScreen(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") }
                 )
+                // Solo visible para ADMIN
+                if (esAdmin) {
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { navController.navigate("backoffice") },
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "BackOffice") },
+                        label = { Text("BackOffice") }
+                    )
+                }
             }
         }
     ) { padding ->
@@ -165,18 +179,21 @@ fun CatalogoScreen(
                         .padding(start = 8.dp, bottom = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    item { CategoryButton("Todos", categoriaSeleccionada == null) { categoriaSeleccionada = null } }
+                    item {
+                        CategoryButton("Todos", categoriaSeleccionada == null) { categoriaSeleccionada = null }
+                    }
                     items(categorias.size) { i ->
                         val cat = categorias[i]
                         CategoryButton(cat, categoriaSeleccionada == cat) { categoriaSeleccionada = cat }
                     }
                 }
 
-                when {
-                    loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                if (loading) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
-                    else -> LazyVerticalGrid(
+                } else {
+                    LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(8.dp),
@@ -188,7 +205,7 @@ fun CatalogoScreen(
                                 producto = producto,
                                 onAgregar = {
                                     carritoViewModel.agregar(producto)
-                                    toastMsg = "Artículo agregado con éxito"
+                                    toastMsg = "${producto.nombre} agregado con éxito"
                                     showToast = true
                                 },
                                 onVerDetalle = { navController.navigate("detalle/${producto.id}") }
@@ -197,7 +214,6 @@ fun CatalogoScreen(
                     }
                 }
             }
-
             if (showToast) {
                 CenterToast(
                     message = toastMsg,
@@ -274,7 +290,7 @@ private fun ProductoCardGrid(
     }
 }
 
-/* Mensaje "Articulo agregado con exito" */
+/*Mensaje producto*/
 @Composable
 private fun CenterToast(
     message: String,
@@ -297,7 +313,10 @@ private fun CenterToast(
             shadowElevation = 8.dp,
             color = MaterialTheme.colorScheme.surface
         ) {
-            Box(Modifier.padding(horizontal = 20.dp, vertical = 14.dp), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(message, style = MaterialTheme.typography.bodyMedium)
             }
         }

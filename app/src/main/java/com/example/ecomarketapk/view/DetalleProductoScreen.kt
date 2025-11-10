@@ -81,7 +81,7 @@ fun DetalleProductoScreen(
                     .padding(padding)
                     .padding(16.dp)
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()), // ✅ Scroll completo
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Image(
@@ -95,8 +95,6 @@ fun DetalleProductoScreen(
                 )
                 val imagenesAdicionales = listOf(
                     p.imagen,
-                    "https://images.unsplash.com/photo-1565958011705-44e2119023b2?auto=format&fit=crop&w=400&q=60",
-                    "https://images.unsplash.com/photo-1574226516831-e1dff420e12e?auto=format&fit=crop&w=400&q=60"
                 )
 
                 Text(

@@ -46,30 +46,26 @@ class MainActivity : ComponentActivity() {
                         composable("register") {
                             RegisterScreen(navController, authViewModel)
                         }
-
                         composable("login") {
                             LoginScreen(navController, authViewModel)
                         }
-
                         composable("catalogo") {
                             CatalogoScreen(
                                 navController = navController,
                                 viewModel = catalogoViewModel,
-                                carritoViewModel = carritoViewModel
+                                carritoViewModel = carritoViewModel,
+                                authViewModel = authViewModel
                             )
                         }
-
                         composable("carrito") {
                             CarritoScreen(
                                 navController = navController,
                                 carritoViewModel = carritoViewModel
                             )
                         }
-
                         composable("perfil") {
                             PerfilScreen(navController, authViewModel)
                         }
-
                         composable("detalle/{id}") { backStackEntry ->
                             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
                             if (id != null) {
@@ -88,16 +84,15 @@ class MainActivity : ComponentActivity() {
                             CompraRechazadaScreen(navController)
                         }
                         composable("backoffice") {
-                            BackOfficeScreen(navController, catalogoViewModel)
+                            BackOfficeScreen(
+                                navController = navController,
+                                viewModel = catalogoViewModel,
+                                authViewModel = authViewModel
+                            )
                         }
                         composable("agregarProducto") {
                             AgregarProductoScreen(navController)
                         }
-
-
-
-
-
                     }
                 }
             }

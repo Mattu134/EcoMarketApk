@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,7 +30,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -38,30 +41,50 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.ecomarketapk.model.Producto
+import com.example.ecomarketapk.viewmodel.AuthViewModel
 import com.example.ecomarketapk.viewmodel.CatalogoViewModel
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BackOfficeScreen(navController: NavController, viewModel: CatalogoViewModel) {
+fun BackOfficeScreen(
+    navController: NavController,
+    viewModel: CatalogoViewModel,
+    authViewModel: AuthViewModel
+) {
     val context = LocalContext.current
     val productos by viewModel.productos.collectAsState()
     val loading by viewModel.loading.collectAsState()
+    val esAdmin by remember {
+        derivedStateOf { authViewModel.usuarioActual.value?.rol == "admin" }
+    }
+
+    LaunchedEffect(esAdmin) {
+        if (esAdmin != true) {
+            navController.navigate("catalogo") {
+                popUpTo("backoffice") { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
 
     LaunchedEffect(Unit) { viewModel.cargarProductos(context) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                        }
-                        Text("Volver", style = MaterialTheme.typography.bodyMedium)
+                title = { Text("BackOffice") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 },
                 actions = {
+
+                    IconButton(onClick = {navController.navigate("catalogo")}) {
+                        Icon(Icons.Default.Home, contentDescription = "Inicio")
+                    }
+
                     IconButton(onClick = { navController.navigate("agregarProducto") }) {
                         Icon(Icons.Default.Add, contentDescription = "Agregar producto")
                     }
@@ -69,20 +92,22 @@ fun BackOfficeScreen(navController: NavController, viewModel: CatalogoViewModel)
             )
         }
     ) { padding ->
-        Box(Modifier.padding(padding)) {
-            if (loading) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(productos) { producto ->
-                        ProductoAdminCard(producto)
+        if (esAdmin == true) {
+            Box(Modifier.padding(padding)) {
+                if (loading) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(productos) { producto ->
+                            ProductoAdminCard(producto)
+                        }
                     }
                 }
             }
