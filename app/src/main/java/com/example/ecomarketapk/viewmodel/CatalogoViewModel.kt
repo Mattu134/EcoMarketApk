@@ -4,13 +4,13 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ecomarketapk.model.Producto
-import com.example.ecomarketapk.repository.ProductoRepository
+import com.example.ecomarketapk.repository.ProductRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class CatalogoViewModel(
-    private val repo: ProductoRepository = ProductoRepository()
+    private val repo: ProductRepository = ProductRepository()
 ) : ViewModel() {
 
     private val _productos = MutableStateFlow<List<Producto>>(emptyList())

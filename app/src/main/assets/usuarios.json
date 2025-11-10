@@ -10,7 +10,7 @@
   {
     "nombre": "Lucía Pérez",
     "email": "lucia.admin@example.com",
-    "direccion": "Calle Los Pinos 456",
+    "direccion": "Calle Los Pinos 456"
     "rut": "22222222-2",
     "password": "admin456",
     "rol": "admin"

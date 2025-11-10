@@ -5,7 +5,7 @@ import com.example.ecomarketapk.model.Producto
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-class ProductoRepository {
+class ProductRepository {
 
     fun obtenerProductosDesdeAssets(context: Context, filename: String = "productos.json"): List<Producto> {
         return try {

@@ -2,6 +2,11 @@ package com.example.ecomarketapk.utils
 import android.util.Patterns
 
 object ValidationUtils {
+
+    fun normalizeRut(rut: String): String {
+        return rut.replace(Regex("[^0-9kK]"), "").uppercase()
+    }
+
     fun isEmailValid(email: String): Boolean {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
