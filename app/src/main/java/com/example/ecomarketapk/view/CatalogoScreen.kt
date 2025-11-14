@@ -230,10 +230,8 @@ private fun CategoryButton(nombre: String, seleccionado: Boolean, onClick: () ->
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (seleccionado)
-                MaterialTheme.colorScheme.primary
-            else
-                MaterialTheme.colorScheme.secondary
+            containerColor = Color(0xFF4CAF50),
+            contentColor = Color.White
         )
     ) { Text(nombre) }
 }
@@ -280,7 +278,10 @@ private fun ProductoCardGrid(
                     .height(40.dp)
                     .padding(horizontal = 8.dp),
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondaryContainer)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4CAF50),
+                    contentColor = Color.White
+                )
             ) {
                 Icon(Icons.Default.ShoppingCart, contentDescription = "Agregar", modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))

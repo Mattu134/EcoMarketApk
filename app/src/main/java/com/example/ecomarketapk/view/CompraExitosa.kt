@@ -56,8 +56,8 @@ fun CompraExitosaScreen(navController: NavController, carritoViewModel: CarritoV
             OutlinedButton(
                 onClick = {
                     carritoViewModel.limpiar()
-                    navController.navigate("login") {
-                        popUpTo("login") { inclusive = true }
+                    navController.navigate("catalogo") {
+                        popUpTo("catalogo") { inclusive = true }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
