@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.ecomarketapk.model.Producto
+import com.example.ecomarketapk.utils.EcoLogo
 import com.example.ecomarketapk.viewmodel.AuthViewModel
 import com.example.ecomarketapk.viewmodel.CarritoViewModel
 import com.example.ecomarketapk.viewmodel.CatalogoViewModel
@@ -71,41 +72,31 @@ import java.util.Locale
 fun CatalogoScreen(
     navController: NavController,
     viewModel: CatalogoViewModel,
-    carritoViewModel: CarritoViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    carritoViewModel: CarritoViewModel,
     authViewModel: AuthViewModel
 ) {
     val context = LocalContext.current
-    val productos by viewModel.productos.collectAsState()
+    val productosFiltrados by viewModel.productosFiltrados.collectAsState()
     val loading by viewModel.loading.collectAsState()
-    val carritoCount by remember { derivedStateOf { carritoViewModel.carrito.size } }
-    //Validacion para ver si es ADMIN
-    val esAdmin by remember {
-        derivedStateOf { authViewModel.usuarioActual.value?.rol == "admin" }
-    }
-    var searchQuery by remember { mutableStateOf("") }
-    var categoriaSeleccionada by remember { mutableStateOf<String?>(null) }
+    val categorias by viewModel.categorias.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val categoriaSeleccionada by viewModel.categoriaSeleccionada.collectAsState()
+    val carritoCount by remember { derivedStateOf { carritoViewModel.carrito.values.sum() } }
+    val esAdmin by remember { derivedStateOf { authViewModel.usuarioActual.value?.rol == "admin" } }
     var showToast by remember { mutableStateOf(false) }
     var toastMsg by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { viewModel.cargarProductos(context) }
 
-    val categorias by remember(productos) {
-        mutableStateOf(productos.mapNotNull { it.categoria }.distinct())
-    }
-    val productosFiltrados by remember(productos, searchQuery, categoriaSeleccionada) {
-        val q = searchQuery.trim().lowercase()
-        mutableStateOf(
-            productos.filter { p ->
-                (categoriaSeleccionada == null || p.categoria == categoriaSeleccionada) &&
-                        (q.isEmpty() || p.nombre.lowercase().contains(q))
-            }
-        )
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("EcoMarket") },
+                title = {
+                    Column (horizontalAlignment = Alignment.CenterHorizontally){
+                        Text(text = "EcoMarket")
+                        EcoLogo()
+                    }
+                },
                 actions = {
                     Box {
                         IconButton(onClick = { navController.navigate("carrito") }) {
@@ -147,7 +138,6 @@ fun CatalogoScreen(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") }
                 )
-                // Solo visible para ADMIN
                 if (esAdmin) {
                     NavigationBarItem(
                         selected = false,
@@ -167,7 +157,7 @@ fun CatalogoScreen(
             ) {
                 OutlinedTextField(
                     value = searchQuery,
-                    onValueChange = { searchQuery = it },
+                    onValueChange = { viewModel.onSearchChange(it) },
                     label = { Text("Buscar producto") },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -180,11 +170,16 @@ fun CatalogoScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     item {
-                        CategoryButton("Todos", categoriaSeleccionada == null) { categoriaSeleccionada = null }
+                        CategoryButton(
+                            "Todos",
+                            categoriaSeleccionada == null
+                        ) { viewModel.onCategoriaSeleccionada(null) }
                     }
                     items(categorias.size) { i ->
                         val cat = categorias[i]
-                        CategoryButton(cat, categoriaSeleccionada == cat) { categoriaSeleccionada = cat }
+                        CategoryButton(cat, categoriaSeleccionada == cat) {
+                            viewModel.onCategoriaSeleccionada(cat)
+                        }
                     }
                 }
 
@@ -291,7 +286,6 @@ private fun ProductoCardGrid(
     }
 }
 
-/*Mensaje producto*/
 @Composable
 private fun CenterToast(
     message: String,

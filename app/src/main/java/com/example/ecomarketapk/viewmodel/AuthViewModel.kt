@@ -8,8 +8,28 @@ import com.example.ecomarketapk.repository.UserRepository
 import com.example.ecomarketapk.utils.ValidationUtils
 
 class AuthViewModel : ViewModel() {
-    var mensaje = mutableStateOf("")
-    var usuarioActual = mutableStateOf<Usuario?>(null)
+
+    val usuarioActual = mutableStateOf<Usuario?>(null)
+    val mensaje = mutableStateOf("")
+
+    fun login(context: Context, email: String, password: String): Boolean {
+        if (email.isBlank() || password.isBlank()) {
+            mensaje.value = "Completa todos los campos"
+            return false
+        }
+        if (!ValidationUtils.isEmailValid(email)) {
+            mensaje.value = "Email inválido"
+            return false
+        }
+        val usuario = UserRepository.login(context, email, password)
+        return if (usuario != null) {
+            usuarioActual.value = usuario
+            true
+        } else {
+            mensaje.value = "Email o contraseña incorrectos"
+            false
+        }
+    }
 
     fun registrar(
         context: Context,
@@ -19,72 +39,35 @@ class AuthViewModel : ViewModel() {
         rut: String,
         password: String
     ): Boolean {
-        val nombreTrim = nombre.trim()
-        val emailTrim = email.trim()
-        val direccionTrim = direccion.trim()
-        val rutNormalizado = ValidationUtils.normalizeRut(rut)
-        val passTrim = password.trim()
-
-        if (nombreTrim.isEmpty() || emailTrim.isEmpty() || direccionTrim.isEmpty() ||
-            rutNormalizado.isEmpty() || passTrim.isEmpty()
-        ) {
-            mensaje.value = "Todos los campos son obligatorios"
+        if (nombre.isBlank() || email.isBlank() || direccion.isBlank() || rut.isBlank() || password.isBlank()) {
+            mensaje.value = "Completa todos los campos"
             return false
         }
-
-        // validacion mail
-        if (!ValidationUtils.isEmailValid(emailTrim)) {
-            mensaje.value = "Email no válido"
+        if (!ValidationUtils.isEmailValid(email)) {
+            mensaje.value = "Email inválido"
             return false
         }
-
-        // validacion rut
-        if (!ValidationUtils.isRutValid(rutNormalizado)) {
-            mensaje.value = "RUT no válido"
+        if (!ValidationUtils.isRutValid(rut)) {
+            mensaje.value = "RUT inválido"
             return false
         }
-
-        val nuevoUsuario = Usuario(
-            nombre = nombreTrim,
-            email = emailTrim,
-            direccion = direccionTrim,
-            rut = rutNormalizado,
-            password = passTrim,
+        val usuario = Usuario(
+            nombre = nombre,
+            email = email,
+            direccion = direccion,
+            rut = rut,
+            password = password,
             rol = "cliente"
         )
-
-        val exito = UserRepository.registrarUsuario(context, nuevoUsuario)
-        return if (exito) {
-            mensaje.value = "Registro exitoso"
-            true
-        } else {
-            mensaje.value = "El email o RUT ya están registrados"
-            false
+        val exito = UserRepository.registrarUsuario(context, usuario)
+        mensaje.value = if (exito) "Usuario registrado correctamente" else "El usuario ya existe"
+        if (exito) {
+            usuarioActual.value = usuario
         }
+        return exito
     }
 
-    fun login(context: Context, email: String, password: String): Boolean {
-        val emailTrim = email.trim()
-        val passTrim = password.trim()
-
-        if (emailTrim.isEmpty() || passTrim.isEmpty()) {
-            mensaje.value = "Por favor ingresa tus credenciales"
-            return false
-        }
-
-        if (!ValidationUtils.isEmailValid(emailTrim)) {
-            mensaje.value = "Email no válido"
-            return false
-        }
-
-        val usuario = UserRepository.login(context, emailTrim, passTrim)
-        return if (usuario != null) {
-            usuarioActual.value = usuario
-            mensaje.value = "Inicio de sesión exitoso"
-            true
-        } else {
-            mensaje.value = "Credenciales incorrectas"
-            false
-        }
+    fun clearMensaje() {
+        mensaje.value = ""
     }
 }

@@ -1,7 +1,6 @@
 package com.example.ecomarketapk.view
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +29,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +52,8 @@ fun DetalleProductoScreen(
     carritoViewModel: CarritoViewModel,
     navController: NavController
 ) {
-    val producto = remember { viewModel.buscarProductoPorId(productoId) }
+    val productos by viewModel.productos.collectAsState()
+    val producto = productos.firstOrNull { it.id == productoId }
 
     Scaffold(
         topBar = {
@@ -93,9 +94,8 @@ fun DetalleProductoScreen(
                         .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop
                 )
-                val imagenesAdicionales = listOf(
-                    p.imagen,
-                )
+
+                val imagenesAdicionales = listOf(p.imagen)
 
                 Text(
                     "Más imágenes",
@@ -114,14 +114,19 @@ fun DetalleProductoScreen(
                         )
                     }
                 }
+
                 Text(
                     text = p.descripcion ?: "Sin descripción disponible.",
                     style = MaterialTheme.typography.bodyMedium
                 )
+
                 Text(
                     text = "Precio: $${String.format(Locale("es", "CL"), "%,.0f", p.precio)}",
-                    style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.primary)
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 )
+
                 Button(
                     onClick = {
                         carritoViewModel.agregar(p)
@@ -132,6 +137,7 @@ fun DetalleProductoScreen(
                 ) {
                     Text("Agregar al carrito")
                 }
+
                 Text(
                     "Opiniones de usuarios",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
@@ -139,7 +145,12 @@ fun DetalleProductoScreen(
 
                 OpinionesList()
             }
-        } ?: Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        } ?: Box(
+            Modifier
+                .padding(padding)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
             Text("Producto no encontrado")
         }
     }
@@ -152,15 +163,13 @@ fun OpinionesList() {
         Triple("Buena calidad, pero el empaque podría mejorar.", 4, "María"),
         Triple("El precio está bien, pero me gustaría más variedad.", 3, "Pedro"),
         Triple("Muy recomendado, cumple lo que promete.", 5, "Sofía"),
-        Triple("No me gustó, esperaba más calidad.", 2, "Luis"),
+        Triple("No me gustó, esperaba más calidad.", 2, "Luis")
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         opiniones.forEach { (comentario, estrellas, usuario) ->
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {

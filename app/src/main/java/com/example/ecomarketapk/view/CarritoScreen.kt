@@ -1,5 +1,6 @@
 package com.example.ecomarketapk.view
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,8 +28,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.ecomarketapk.R
 import com.example.ecomarketapk.model.Producto
 import com.example.ecomarketapk.viewmodel.CarritoViewModel
 import java.util.Locale
@@ -40,24 +43,26 @@ fun CarritoScreen(navController: NavController, carritoViewModel: CarritoViewMod
     val subtotal = carritoViewModel.subtotal()
 
     Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { navController.navigate("catalogo") }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                            }
-                            Text("Volver", style = MaterialTheme.typography.bodyMedium)
-                        }
-                    },
-                    actions = {
-                        Text(
-                            "Tu carrito de compras",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(end = 16.dp)
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigate("catalogo") }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                title = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Carrito", style = MaterialTheme.typography.titleMedium)
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "Logo EcoMarket",
+                            modifier = Modifier
+                                .padding(top = 4.dp)
+                                .height(32.dp)
                         )
                     }
-                )
+                }
+            )
         },
         bottomBar = {
             Column(Modifier.padding(16.dp)) {
@@ -68,8 +73,7 @@ fun CarritoScreen(navController: NavController, carritoViewModel: CarritoViewMod
                 Spacer(Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        // Simular compra
-                        val exito = (0..100).random() < 50
+                        val exito = carritoViewModel.pagar()
                         if (exito) {
                             navController.navigate("compraExitosa")
                         } else {
@@ -79,20 +83,24 @@ fun CarritoScreen(navController: NavController, carritoViewModel: CarritoViewMod
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp)
                 ) {
-                    Text("Pagar ")
+                    Text("Pagar")
                 }
             }
         }
     ) { padding ->
-        LazyColumn(Modifier.padding(padding).padding(8.dp)) {
+        LazyColumn(
+            Modifier
+                .padding(padding)
+                .padding(8.dp)
+        ) {
             items(carrito.keys.toList()) { producto ->
                 val cantidad = carrito[producto] ?: 0
                 CarritoItem(
                     producto = producto,
                     cantidad = cantidad,
                     onIncrementar = { carritoViewModel.agregar(producto) },
-                    onDecrementar = { carritoViewModel.eliminar(producto) },
-                    onEliminar = { carritoViewModel.carrito.remove(producto) }
+                    onDecrementar = { carritoViewModel.disminuir(producto) },
+                    onEliminar = { carritoViewModel.eliminarProducto(producto) }
                 )
             }
         }

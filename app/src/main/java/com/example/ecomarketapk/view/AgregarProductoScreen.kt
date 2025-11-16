@@ -36,11 +36,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.ecomarketapk.viewmodel.BackOfficeViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AgregarProductoScreen(navController: NavController) {
+fun AgregarProductoScreen(navController: NavController, viewModel: BackOfficeViewModel) {
     val context = LocalContext.current
 
     var nombre by remember { mutableStateOf("") }
@@ -48,6 +49,11 @@ fun AgregarProductoScreen(navController: NavController) {
     var descripcion by remember { mutableStateOf("") }
     var imagen by remember { mutableStateOf("") }
     var categoria by remember { mutableStateOf("Selecciona una categoría") }
+
+    var stock by remember { mutableStateOf("") }
+    var proveedor by remember { mutableStateOf("") }
+    var lote by remember { mutableStateOf("") }
+    var fechaExpiracion by remember { mutableStateOf("") }
 
     var mensajeExito by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
@@ -104,7 +110,7 @@ fun AgregarProductoScreen(navController: NavController) {
             OutlinedTextField(
                 value = imagen,
                 onValueChange = { imagen = it },
-                label = { Text("URL de la imagen") },
+                label = { Text("URL o nombre de la imagen") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -139,38 +145,78 @@ fun AgregarProductoScreen(navController: NavController) {
                 }
             }
 
+            OutlinedTextField(
+                value = stock,
+                onValueChange = { if (it.all { c -> c.isDigit() }) stock = it },
+                label = { Text("Stock (unidades)") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = proveedor,
+                onValueChange = { proveedor = it },
+                label = { Text("Proveedor") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = lote,
+                onValueChange = { lote = it },
+                label = { Text("Lote") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = fechaExpiracion,
+                onValueChange = { fechaExpiracion = it },
+                label = { Text("Fecha de expiración (ej: 2025-11-05)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Button(
                 onClick = {
-                    when {
-                        nombre.isBlank() || precio.isBlank() || descripcion.isBlank() || imagen.isBlank() || categoria == "Selecciona una categoría" -> {
-                            Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
-                        }
-
-                        precio.toDoubleOrNull() == null || precio.toDouble() <= 0 -> {
-                            Toast.makeText(context, "Precio inválido", Toast.LENGTH_SHORT).show()
-                        }
-
-                        else -> {
-                            mensajeExito = true
-                            Toast.makeText(context, "Producto agregado correctamente", Toast.LENGTH_SHORT).show()
-                            nombre = ""
-                            precio = ""
-                            descripcion = ""
-                            imagen = ""
-                            categoria = "Selecciona una categoría"
-                        }
+                    val resultado = viewModel.agregarProducto(
+                        context = context,
+                        nombre = nombre,
+                        precio = precio,
+                        descripcion = descripcion,
+                        imagen = imagen,
+                        categoria = if (categoria == "Selecciona una categoría") "" else categoria,
+                        stock = stock,
+                        proveedor = proveedor,
+                        lote = lote,
+                        fechaExpiracion = fechaExpiracion
+                    )
+                    Toast.makeText(context, resultado.mensaje, Toast.LENGTH_SHORT).show()
+                    if (resultado.exito) {
+                        mensajeExito = true
+                        nombre = ""
+                        precio = ""
+                        descripcion = ""
+                        imagen = ""
+                        categoria = "Selecciona una categoría"
+                        stock = ""
+                        proveedor = ""
+                        lote = ""
+                        fechaExpiracion = ""
+                        viewModel.cargarInventario(context)
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Guardar Producto")
             }
+
             if (mensajeExito) {
                 LaunchedEffect(Unit) {
                     delay(2000)
                     mensajeExito = false
                 }
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.CheckCircle,

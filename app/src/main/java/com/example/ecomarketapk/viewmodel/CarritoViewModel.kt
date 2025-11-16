@@ -1,33 +1,41 @@
 package com.example.ecomarketapk.viewmodel
 
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import com.example.ecomarketapk.model.Producto
 
 class CarritoViewModel : ViewModel() {
 
-    val carrito = mutableStateMapOf<Producto, Int>()
+    private val _carrito: SnapshotStateMap<Producto, Int> = mutableStateMapOf()
+    val carrito: Map<Producto, Int> get() = _carrito
 
     fun agregar(producto: Producto) {
-        carrito[producto] = (carrito[producto] ?: 0) + 1
+        val actual = _carrito[producto] ?: 0
+        _carrito[producto] = actual + 1
     }
 
-    fun eliminar(producto: Producto) {
-        val cantidadActual = carrito[producto]
-        if (cantidadActual != null) {
-            if (cantidadActual > 1) {
-                carrito[producto] = cantidadActual - 1
-            } else {
-                carrito.remove(producto)
-            }
+    fun disminuir(producto: Producto) {
+        val actual = _carrito[producto] ?: 0
+        if (actual <= 1) {
+            _carrito.remove(producto)
+        } else {
+            _carrito[producto] = actual - 1
         }
     }
 
-    fun limpiar() {
-        carrito.clear()
+    fun eliminarProducto(producto: Producto) {
+        _carrito.remove(producto)
     }
 
     fun subtotal(): Double {
-        return carrito.entries.sumOf { (producto, cantidad) -> producto.precio * cantidad }
+        return _carrito.entries.sumOf { it.key.precio * it.value }
+    }
+
+    fun pagar(): Boolean {
+        return (0..100).random() < 50
+    }
+    fun limpiar(){
+        _carrito.clear()
     }
 }

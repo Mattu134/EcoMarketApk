@@ -28,7 +28,9 @@ import androidx.navigation.NavController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompraRechazadaScreen(navController: NavController) {
-    Scaffold(topBar = { TopAppBar(title = { Text("Compra Rechazada") }) }) { padding ->
+    Scaffold(
+        topBar = { TopAppBar(title = { Text("Compra Rechazada") }) }
+    ) { padding ->
         Column(
             Modifier
                 .padding(padding)

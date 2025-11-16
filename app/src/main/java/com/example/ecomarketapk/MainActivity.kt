@@ -22,6 +22,7 @@ import com.example.ecomarketapk.view.LoginScreen
 import com.example.ecomarketapk.view.PerfilScreen
 import com.example.ecomarketapk.view.RegisterScreen
 import com.example.ecomarketapk.viewmodel.AuthViewModel
+import com.example.ecomarketapk.viewmodel.BackOfficeViewModel
 import com.example.ecomarketapk.viewmodel.CarritoViewModel
 import com.example.ecomarketapk.viewmodel.CatalogoViewModel
 
@@ -38,6 +39,7 @@ class MainActivity : ComponentActivity() {
                     val authViewModel: AuthViewModel = viewModel()
                     val catalogoViewModel: CatalogoViewModel = viewModel()
                     val carritoViewModel: CarritoViewModel = viewModel()
+                    val backOfficeViewModel: BackOfficeViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -86,12 +88,15 @@ class MainActivity : ComponentActivity() {
                         composable("backoffice") {
                             BackOfficeScreen(
                                 navController = navController,
-                                viewModel = catalogoViewModel,
+                                viewModel = backOfficeViewModel,
                                 authViewModel = authViewModel
                             )
                         }
                         composable("agregarProducto") {
-                            AgregarProductoScreen(navController)
+                            AgregarProductoScreen(
+                                navController = navController,
+                                viewModel = backOfficeViewModel
+                            )
                         }
                     }
                 }

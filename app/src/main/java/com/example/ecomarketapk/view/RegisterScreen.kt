@@ -1,4 +1,5 @@
 package com.example.ecomarketapk.view
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,13 +32,12 @@ import com.example.ecomarketapk.viewmodel.AuthViewModel
 
 @Composable
 fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
-
     var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
     var rut by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
+    val mensaje by viewModel.mensaje
     val context = LocalContext.current
 
     Column(
@@ -54,7 +54,6 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
             modifier = Modifier
                 .size(200.dp)
                 .padding(bottom = 50.dp)
-
         )
 
         Text("Registro", style = MaterialTheme.typography.titleLarge)
@@ -73,19 +72,23 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            val exito = viewModel.registrar(context, nombre, email, direccion, rut, password)
-            if (exito) {
-                navController.navigate("login") {
-                    popUpTo("register") { inclusive = true }
+        Button(
+            onClick = {
+                val exito = viewModel.registrar(context, nombre, email, direccion, rut, password)
+                if (exito) {
+                    navController.navigate("login") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                    viewModel.clearMensaje()
                 }
-                viewModel.mensaje.value =""
             }
-        }) {
+        ) {
             Text("Registrar")
         }
 
-        Text(viewModel.mensaje.value, modifier = Modifier.padding(top = 10.dp))
+        if (mensaje.isNotEmpty()) {
+            Text(mensaje, modifier = Modifier.padding(top = 10.dp))
+        }
 
         TextButton(onClick = { navController.navigate("login") }) {
             Text("¿Ya tienes cuenta? Inicia sesión")

@@ -31,17 +31,17 @@ import com.example.ecomarketapk.R
 import com.example.ecomarketapk.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 
-
 @Composable
 fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
-    val mensaje = viewModel.mensaje.value
+    val mensaje by viewModel.mensaje
+
     LaunchedEffect(mensaje) {
         if (mensaje.isNotEmpty()) {
             delay(3000)
-            viewModel.mensaje.value = ""
+            viewModel.clearMensaje()
         }
     }
 
@@ -58,7 +58,6 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
             modifier = Modifier
                 .size(200.dp)
                 .padding(bottom = 50.dp)
-
         )
 
         Text("Inicio de Sesión", style = MaterialTheme.typography.titleLarge)
@@ -81,26 +80,30 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            if (viewModel.login(context, email, password)) {
-                val usuario = viewModel.usuarioActual.value
-                if (usuario?.rol == "admin") {
-                    navController.navigate("catalogo") {
-                        popUpTo("login") { inclusive = true }
+        Button(
+            onClick = {
+                if (viewModel.login(context, email, password)) {
+                    val usuario = viewModel.usuarioActual.value
+                    if (usuario?.rol == "admin") {
+                        navController.navigate("catalogo") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("catalogo") {
+                            popUpTo("login") { inclusive = true }
+                        }
                     }
-                } else {
-                    navController.navigate("catalogo") {
-                        popUpTo("login") { inclusive = true }
-                    }
+                    viewModel.clearMensaje()
                 }
-                viewModel.mensaje.value = ""
-            }
-        }, modifier = Modifier.fillMaxWidth()) {
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("Entrar")
         }
+
         TextButton(
             onClick = {
-                viewModel.mensaje.value = ""
+                viewModel.clearMensaje()
                 navController.navigate("register") {
                     popUpTo("login") { inclusive = false }
                 }
@@ -109,6 +112,7 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
         ) {
             Text("¿No tienes cuenta? Crear cuenta")
         }
+
         if (mensaje.isNotEmpty()) {
             Text(
                 text = mensaje,
