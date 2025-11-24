@@ -1,88 +1,185 @@
 package com.example.ecomarketapk.viewmodel
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.ecomarketapk.data.ProductoRequest
+import com.example.ecomarketapk.data.ProductoResponse
+import com.example.ecomarketapk.data.toDomain
 import com.example.ecomarketapk.model.Producto
-import com.example.ecomarketapk.repository.ProductRepository
+import com.example.ecomarketapk.repository.ProductoRepository
+import com.example.ecomarketapk.utils.crearImagenPartDesdeUri
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.io.File
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
-data class ResultadoAgregar(val exito: Boolean, val mensaje: String)
+data class ResultadoOperacion(val exito: Boolean, val mensaje: String)
 
-class BackOfficeViewModel : ViewModel() {
+class BackOfficeViewModel(
+    private val repository: ProductoRepository = ProductoRepository()
+) : ViewModel() {
 
     private val _inventario = MutableStateFlow<List<Producto>>(emptyList())
     val inventario: StateFlow<List<Producto>> = _inventario
+    private val _productoEnEdicion = MutableStateFlow<Producto?>(null)
+    val productoEnEdicion: StateFlow<Producto?> = _productoEnEdicion
 
-    fun cargarInventario(context: Context) {
+    private val gson = Gson()
+
+    fun cargarInventario() {
         viewModelScope.launch {
-            val lista = ProductRepository.obtenerProductos(context)
-            _inventario.value = lista
+            try {
+                val productosApi = repository.obtenerProductos()
+                _inventario.value = productosApi.map { it.toDomain() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _inventario.value = emptyList()
+            }
         }
     }
 
-    fun agregarProducto(
+    fun cargarProductoParaEdicion(id: Long) {
+        viewModelScope.launch {
+            try {
+                val resp = repository.obtenerProductoPorId(id) // ProductoResponse
+                _productoEnEdicion.value = resp.toDomain()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _productoEnEdicion.value = null
+            }
+        }
+    }
+
+    suspend fun agregarProducto(
         context: Context,
         nombre: String,
         precio: String,
         descripcion: String,
-        imagen: String,
+        imagenUri: Uri?,
         categoria: String,
         stock: String,
         proveedor: String,
         lote: String,
         fechaExpiracion: String
-    ): ResultadoAgregar {
+    ): ResultadoOperacion {
 
         if (nombre.isBlank() || precio.isBlank() || descripcion.isBlank() ||
-            imagen.isBlank() || categoria.isBlank() ||
-            stock.isBlank() || proveedor.isBlank() || lote.isBlank() || fechaExpiracion.isBlank()
+            categoria.isBlank() || stock.isBlank() || proveedor.isBlank() ||
+            lote.isBlank() || fechaExpiracion.isBlank()
         ) {
-            return ResultadoAgregar(false, "Por favor completa todos los campos")
+            return ResultadoOperacion(false, "Por favor completa todos los campos")
         }
 
-        val precioDouble = precio.toDoubleOrNull()
-        if (precioDouble == null || precioDouble <= 0) {
-            return ResultadoAgregar(false, "Precio inválido")
+        if (imagenUri == null) {
+            return ResultadoOperacion(false, "Debes seleccionar una imagen")
         }
 
+        val precioInt = precio.toIntOrNull()
         val stockInt = stock.toIntOrNull()
+
+        if (precioInt == null || precioInt <= 0) {
+            return ResultadoOperacion(false, "Precio inválido")
+        }
         if (stockInt == null || stockInt < 0) {
-            return ResultadoAgregar(false, "Stock inválido")
+            return ResultadoOperacion(false, "Stock inválido")
         }
 
-        val nuevoId = (_inventario.value.maxOfOrNull { it.id } ?: 0) + 1
+        return try {
+            val request = ProductoRequest(
+                nombre = nombre,
+                descripcion = descripcion,
+                precioClp = precioInt,
+                stock = stockInt,
+                categoria = categoria,
+                proveedor = proveedor,
+                numeroLote = lote,
+                fechaExpiracion = fechaExpiracion
+            )
 
-        val nuevoProducto = Producto(
-            id = nuevoId,
-            nombre = nombre,
-            descripcion = descripcion,
-            precio = precioDouble,
-            imagen = imagen,
-            categoria = categoria,
-            stock = stockInt,
-            proveedor = proveedor,
-            lote = lote,
-            fechaExpiracion = fechaExpiracion
-        )
+            val json = gson.toJson(request)
+            val productoBody = json.toRequestBody("application/json".toMediaType())
+            val imagenPart = crearImagenPartDesdeUri(
+                context = context,
+                uri = imagenUri,
+                nombreCampo = "imagen",
+                nombreArchivo = "producto_${nombre}.jpg"
+            )
 
-        val listaActualizada = _inventario.value + nuevoProducto
-        _inventario.value = listaActualizada
+            val creadoResponse = repository.crearProducto(
+                productoJson = productoBody,
+                imagen = imagenPart
+            )
 
-        guardarInventarioEnArchivo(context, listaActualizada)
+            val creado = creadoResponse.toDomain()
+            _inventario.value = _inventario.value + creado
 
-        return ResultadoAgregar(true, "Producto agregado correctamente")
+            ResultadoOperacion(true, "Producto guardado en el servidor")
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ResultadoOperacion(false, "Error al guardar: ${e.message}")
+        }
     }
 
-    private fun guardarInventarioEnArchivo(context: Context, inventario: List<Producto>) {
-        val gson = Gson()
-        val json = gson.toJson(inventario)
+    suspend fun actualizarProducto(
+        id: Long,
+        nombre: String,
+        precio: String,
+        descripcion: String,
+        categoria: String,
+        stock: String,
+        proveedor: String,
+        lote: String,
+        fechaExpiracion: String
+    ): ResultadoOperacion {
 
-        val file = File(context.filesDir, "productos_actualizados.json")
-        file.writeText(json)
+        if (nombre.isBlank() || precio.isBlank() || descripcion.isBlank() ||
+            categoria.isBlank() || stock.isBlank() || proveedor.isBlank() ||
+            lote.isBlank() || fechaExpiracion.isBlank()
+        ) {
+            return ResultadoOperacion(false, "Por favor completa todos los campos")
+        }
+
+        val precioInt = precio.toIntOrNull()
+        val stockInt = stock.toIntOrNull()
+
+        if (precioInt == null || precioInt <= 0) {
+            return ResultadoOperacion(false, "Precio inválido")
+        }
+
+        if (stockInt == null || stockInt < 0) {
+            return ResultadoOperacion(false, "Stock inválido")
+        }
+
+        return try {
+            val request = ProductoRequest(
+                nombre = nombre,
+                descripcion = descripcion,
+                precioClp = precioInt,
+                stock = stockInt,
+                categoria = categoria,
+                proveedor = proveedor,
+                numeroLote = lote,
+                fechaExpiracion = fechaExpiracion
+            )
+
+            val actualizadoResponse: ProductoResponse =
+                repository.actualizarProducto(id, request)
+
+            val actualizado = actualizadoResponse.toDomain()
+            _inventario.value = _inventario.value.map {
+                if (it.id == id) actualizado else it
+            }
+
+            ResultadoOperacion(true, "Producto actualizado correctamente")
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ResultadoOperacion(false, "Error al actualizar: ${e.message}")
+        }
     }
 }

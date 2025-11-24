@@ -6,10 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.ecomarketapk.ui.theme.EcoMarketApkTheme
 import com.example.ecomarketapk.view.AgregarProductoScreen
 import com.example.ecomarketapk.view.BackOfficeScreen
@@ -18,6 +21,7 @@ import com.example.ecomarketapk.view.CatalogoScreen
 import com.example.ecomarketapk.view.CompraExitosaScreen
 import com.example.ecomarketapk.view.CompraRechazadaScreen
 import com.example.ecomarketapk.view.DetalleProductoScreen
+import com.example.ecomarketapk.view.EditarProductoScreen
 import com.example.ecomarketapk.view.LoginScreen
 import com.example.ecomarketapk.view.PerfilScreen
 import com.example.ecomarketapk.view.RegisterScreen
@@ -32,7 +36,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             EcoMarketApkTheme {
                 Surface(
-                    modifier = androidx.compose.ui.Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
@@ -46,11 +50,20 @@ class MainActivity : ComponentActivity() {
                         startDestination = "login"
                     ) {
                         composable("register") {
-                            RegisterScreen(navController, authViewModel)
+                            RegisterScreen(
+                                navController = navController,
+                                viewModel = authViewModel
+                            )
                         }
+
                         composable("login") {
-                            LoginScreen(navController, authViewModel)
+                            LoginScreen(
+                                navController = navController,
+                                viewModel = authViewModel
+
+                            )
                         }
+
                         composable("catalogo") {
                             CatalogoScreen(
                                 navController = navController,
@@ -59,17 +72,26 @@ class MainActivity : ComponentActivity() {
                                 authViewModel = authViewModel
                             )
                         }
+
                         composable("carrito") {
                             CarritoScreen(
                                 navController = navController,
                                 carritoViewModel = carritoViewModel
                             )
                         }
+
                         composable("perfil") {
-                            PerfilScreen(navController, authViewModel)
+                            PerfilScreen(
+                                navController = navController,
+                                authViewModel = authViewModel
+                            )
                         }
+
                         composable("detalle/{id}") { backStackEntry ->
-                            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
+                            val id = backStackEntry.arguments
+                                ?.getString("id")
+                                ?.toIntOrNull()
+
                             if (id != null) {
                                 DetalleProductoScreen(
                                     productoId = id,
@@ -79,12 +101,20 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
+
                         composable("compraExitosa") {
-                            CompraExitosaScreen(navController, carritoViewModel)
+                            CompraExitosaScreen(
+                                navController = navController,
+                                carritoViewModel = carritoViewModel
+                            )
                         }
+
                         composable("compraRechazada") {
-                            CompraRechazadaScreen(navController)
+                            CompraRechazadaScreen(
+                                navController = navController
+                            )
                         }
+
                         composable("backoffice") {
                             BackOfficeScreen(
                                 navController = navController,
@@ -95,6 +125,22 @@ class MainActivity : ComponentActivity() {
                         composable("agregarProducto") {
                             AgregarProductoScreen(
                                 navController = navController,
+                                viewModel = backOfficeViewModel,
+                                catalogoViewModel = catalogoViewModel
+                            )
+                        }
+                        composable(
+                            route = "editarProducto/{id}",
+                            arguments = listOf(
+                                navArgument("id") { type = NavType.LongType }
+                            )
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getLong("id") ?: 0L
+                            val backOfficeViewModel: BackOfficeViewModel = viewModel()
+
+                            EditarProductoScreen(
+                                navController = navController,
+                                productoId = id,
                                 viewModel = backOfficeViewModel
                             )
                         }

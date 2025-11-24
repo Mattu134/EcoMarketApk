@@ -1,18 +1,22 @@
 package com.example.ecomarketapk.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ecomarketapk.model.Producto
-import com.example.ecomarketapk.repository.ProductRepository
+import com.example.ecomarketapk.data.ProductoResponse
+import com.example.ecomarketapk.repository.ProductoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class CatalogoViewModel : ViewModel() {
+class CatalogoViewModel(
+    private val repository: ProductoRepository = ProductoRepository()
+) : ViewModel() {
 
-    private val _productos = MutableStateFlow<List<Producto>>(emptyList())
-    val productos: StateFlow<List<Producto>> = _productos
+    private val _productos = MutableStateFlow<List<ProductoResponse>>(emptyList())
+    val productos: StateFlow<List<ProductoResponse>> = _productos
+
+    private val _productosFiltrados = MutableStateFlow<List<ProductoResponse>>(emptyList())
+    val productosFiltrados: StateFlow<List<ProductoResponse>> = _productosFiltrados
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
@@ -26,17 +30,17 @@ class CatalogoViewModel : ViewModel() {
     private val _categoriaSeleccionada = MutableStateFlow<String?>(null)
     val categoriaSeleccionada: StateFlow<String?> = _categoriaSeleccionada
 
-    private val _productosFiltrados = MutableStateFlow<List<Producto>>(emptyList())
-    val productosFiltrados: StateFlow<List<Producto>> = _productosFiltrados
-
-    fun cargarProductos(context: Context) {
+    fun cargarProductos() {
         viewModelScope.launch {
-            _loading.value = true
-            val lista = ProductRepository.obtenerProductos(context)
-            _productos.value = lista
-            _categorias.value = lista.mapNotNull { it.categoria }.distinct()
-            actualizarFiltro()
-            _loading.value = false
+            try {
+                _loading.value = true
+                val lista = repository.obtenerProductos()
+                _productos.value = lista
+                _categorias.value = lista.mapNotNull { it.categoria }.distinct()
+                actualizarFiltro()
+            } finally {
+                _loading.value = false
+            }
         }
     }
 

@@ -2,12 +2,14 @@ package com.example.ecomarketapk.view
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,16 +57,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.ecomarketapk.model.Producto
+import com.example.ecomarketapk.data.ProductoResponse
 import com.example.ecomarketapk.utils.EcoLogo
 import com.example.ecomarketapk.viewmodel.AuthViewModel
 import com.example.ecomarketapk.viewmodel.CarritoViewModel
 import com.example.ecomarketapk.viewmodel.CatalogoViewModel
-import kotlinx.coroutines.delay
+import com.example.ecomarketapk.viewmodel.MonedaViewModel
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,9 +75,9 @@ fun CatalogoScreen(
     navController: NavController,
     viewModel: CatalogoViewModel,
     carritoViewModel: CarritoViewModel,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    monedaViewModel: MonedaViewModel = viewModel(),
 ) {
-    val context = LocalContext.current
     val productosFiltrados by viewModel.productosFiltrados.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val categorias by viewModel.categorias.collectAsState()
@@ -85,14 +87,18 @@ fun CatalogoScreen(
     val esAdmin by remember { derivedStateOf { authViewModel.usuarioActual.value?.rol == "admin" } }
     var showToast by remember { mutableStateOf(false) }
     var toastMsg by remember { mutableStateOf("") }
+    val tasaClpUsd by monedaViewModel.tasaClpUsd.collectAsState()
 
-    LaunchedEffect(Unit) { viewModel.cargarProductos(context) }
+    LaunchedEffect(Unit) {
+        viewModel.cargarProductos()
+        monedaViewModel.cargarTasaClpUsd()
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Column (horizontalAlignment = Alignment.CenterHorizontally){
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "EcoMarket")
                         EcoLogo()
                     }
@@ -110,7 +116,10 @@ fun CatalogoScreen(
                                     .offset(x = (-4).dp, y = 4.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.primary
+                                ) {
                                     Box(Modifier.size(18.dp))
                                 }
                                 Text(
@@ -163,6 +172,7 @@ fun CatalogoScreen(
                         .fillMaxWidth()
                         .padding(8.dp)
                 )
+
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -196,26 +206,27 @@ fun CatalogoScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(productosFiltrados, key = { it.id }) { producto ->
+                            val imageUrl =
+                                "http://10.0.2.2:8080/api/products/${producto.id}/image"
+
                             ProductoCardGrid(
                                 producto = producto,
+                                imageUrl = imageUrl,
+                                tasaClpUsd = tasaClpUsd,
                                 onAgregar = {
                                     carritoViewModel.agregar(producto)
                                     toastMsg = "${producto.nombre} agregado con éxito"
                                     showToast = true
                                 },
-                                onVerDetalle = { navController.navigate("detalle/${producto.id}") }
+                                onVerDetalle = {
+                                    navController.navigate("detalle/${producto.id}")
+                                }
                             )
                         }
                     }
                 }
             }
-            if (showToast) {
-                CenterToast(
-                    message = toastMsg,
-                    onDismiss = { showToast = false },
-                    durationMillis = 1500
-                )
-            }
+
         }
     }
 }
@@ -234,86 +245,106 @@ private fun CategoryButton(nombre: String, seleccionado: Boolean, onClick: () ->
 @SuppressLint("DefaultLocale")
 @Composable
 private fun ProductoCardGrid(
-    producto: Producto,
+    producto: ProductoResponse,
+    imageUrl: String,
+    tasaClpUsd: Double?,
     onAgregar: () -> Unit,
-    onVerDetalle: () -> Unit
+    onVerDetalle: () -> Unit,
 ) {
+    val precioClp = producto.precioClp.toDouble()
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onVerDetalle() },
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(10.dp)
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(model = producto.imagen),
-                contentDescription = producto.nombre,
+            val painter = rememberAsyncImagePainter(model = imageUrl)
+
+            Box(
                 modifier = Modifier
-                    .height(130.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp)),
-                contentScale = ContentScale.Crop
-            )
+                    .aspectRatio(1f) //
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF1F1F1)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painter,
+                    contentDescription = producto.nombre,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
             Spacer(Modifier.height(8.dp))
-            Text(producto.nombre, style = MaterialTheme.typography.titleMedium, maxLines = 2)
+            producto.categoria?.let { categoria ->
+                Text(
+                    text = categoria,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFF2E7D32),
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .clip(RoundedCornerShape(50))
+                        .background(Color(0x332E7D32))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+                Spacer(Modifier.height(4.dp))
+            }
             Text(
-                "$${String.format(Locale("es", "CL"), "%,.0f", producto.precio)}",
-                style = MaterialTheme.typography.bodyMedium
+                producto.nombre,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2
             )
+
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = "$${String.format(Locale("es", "CL"), "%,.0f", precioClp)}",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color(0xFF388E3C)
+            )
+            if (tasaClpUsd != null) {
+                val precioUsd = precioClp * tasaClpUsd
+                Text(
+                    text = "≈ ${"%.2f".format(precioUsd)} USD",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            } else {
+                Text(
+                    text = "Cargando USD...",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
+
             Spacer(Modifier.height(8.dp))
+
             Button(
                 onClick = onAgregar,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp)
-                    .padding(horizontal = 8.dp),
-                shape = RoundedCornerShape(8.dp),
+                    .height(40.dp),
+                shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF4CAF50),
                     contentColor = Color.White
                 )
             ) {
-                Icon(Icons.Default.ShoppingCart, contentDescription = "Agregar", modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(4.dp))
+                Icon(
+                    Icons.Default.ShoppingCart,
+                    contentDescription = "Agregar",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(6.dp))
                 Text("Agregar")
             }
         }
     }
 }
 
-@Composable
-private fun CenterToast(
-    message: String,
-    onDismiss: () -> Unit,
-    durationMillis: Long = 1500
-) {
-    LaunchedEffect(Unit) {
-        delay(durationMillis)
-        onDismiss()
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            tonalElevation = 8.dp,
-            shadowElevation = 8.dp,
-            color = MaterialTheme.colorScheme.surface
-        ) {
-            Box(
-                Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(message, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-    }
-}

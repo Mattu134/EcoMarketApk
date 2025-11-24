@@ -1,14 +1,14 @@
 package com.example.ecomarketapk.model
 
 data class Producto(
-    val id: Int,
+    val id: Long,
     val nombre: String,
     val descripcion: String?,
-    val precio: Double,
-    val imagen: String?,
-    val categoria: String?,
+    val precioClp: Int,
     val stock: Int,
+    val categoria: String?,
     val proveedor: String?,
-    val lote: String?,
-    val fechaExpiracion: String?
+    val numeroLote: String?,
+    val fechaExpiracion: String?,
+    val imagen: String?
 )
