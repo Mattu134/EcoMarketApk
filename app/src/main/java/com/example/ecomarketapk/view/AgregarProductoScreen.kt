@@ -400,7 +400,6 @@ fun AgregarProductoScreen(
 
                         if (resultado.exito) {
                             mensajeExito = true
-                            // Limpiar campos
                             nombre = ""
                             precio = ""
                             descripcion = ""

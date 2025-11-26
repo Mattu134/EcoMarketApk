@@ -207,7 +207,7 @@ fun CatalogoScreen(
                     ) {
                         items(productosFiltrados, key = { it.id }) { producto ->
                             val imageUrl =
-                                "http://10.0.2.2:8080/api/products/${producto.id}/image"
+                                "http://3.17.39.248:8080/api/products/${producto.id}/image"
 
                             ProductoCardGrid(
                                 producto = producto,

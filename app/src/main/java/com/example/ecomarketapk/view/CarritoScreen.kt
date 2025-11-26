@@ -187,7 +187,8 @@ private fun CarritoItemRow(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val imageUrl = "http://10.0.2.2:8080/api/products/${producto.id}/image"
+            val imageUrl =
+                "http://3.17.39.248:8080/api/products/${producto.id}/image"
             val painter =
                 rememberAsyncImagePainter(model = imageUrl)
 

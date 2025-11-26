@@ -20,7 +20,7 @@ class CarritoViewModel(
 
     fun agregar(producto: ProductoResponse) {
         val actual = _carrito[producto] ?: 0
-        if (actual >= producto.stock) return
+        if (producto.stock > 0 && actual >= producto.stock) return
         _carrito[producto] = actual + 1
     }
 

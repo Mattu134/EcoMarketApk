@@ -77,7 +77,7 @@ fun DetalleProductoScreen(
     ) { padding ->
 
         producto?.let { p ->
-            val imageUrl = "http://10.0.2.2:8080/api/products/${p.id}/image"
+            val imageUrl = "http://3.17.39.248:8080/api/products/${producto.id}/image"
 
             Column(
                 modifier = Modifier
@@ -251,10 +251,7 @@ private fun SimplePill(
 fun OpinionesList() {
     val opiniones = listOf(
         Triple("Excelente producto, llegó a tiempo y en buen estado.", 5, "Juan"),
-        Triple("Buena calidad, pero el empaque podría mejorar.", 4, "María"),
-        Triple("El precio está bien, pero me gustaría más variedad.", 3, "Pedro"),
-        Triple("Muy recomendado, cumple lo que promete.", 5, "Sofía"),
-        Triple("No me gustó, esperaba más calidad.", 2, "Luis")
+
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

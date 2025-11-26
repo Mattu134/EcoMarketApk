@@ -252,7 +252,7 @@ fun InventarioItem(
     onEditar: () -> Unit
 ) {
     val valorProducto = producto.precioClp * producto.stock
-    val imageUrl = "http://10.0.2.2:8080/api/products/${producto.id}/image"
+    val imageUrl = "http://3.17.39.248:8080/api/products/${producto.id}/image"
     val painter = rememberAsyncImagePainter(model = imageUrl)
 
     Card(
