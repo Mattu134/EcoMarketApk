@@ -13,38 +13,28 @@ class MonedaViewModel : ViewModel() {
     private val _tasaClpUsd = MutableStateFlow<Double?>(null)
     val tasaClpUsd: StateFlow<Double?> = _tasaClpUsd
 
-    private val api = ExchangeRateClient.api
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
 
     fun cargarTasaClpUsd() {
         viewModelScope.launch {
             try {
-                Log.d("MonedaViewModel", "Solicitando tasa USD → CLP (Frankfurter)...")
+                Log.d("MonedaViewModel", "Solicitando tasa CLP → USD (ExchangeRate-API)...")
 
-                val response = api.getLatestRates(
-                    from = "USD",
-                    to = "CLP"
-                )
-
-                Log.d(
-                    "MonedaViewModel",
-                    "Respuesta Frankfurter: base=${response.base}, rates=${response.rates}"
-                )
-
-                val usdToClp = response.rates["CLP"]
-
-                if (usdToClp != null && usdToClp > 0) {
-                    val clpToUsd = 1.0 / usdToClp
-                    _tasaClpUsd.value = clpToUsd
-                    Log.d("MonedaViewModel", "Tasa CLP→USD cargada: $clpToUsd")
+                val response = ExchangeRateClient.api.getLatestRates()
+                val usdRate = response.conversionRates["USD"]
+                if (usdRate != null) {
+                    _tasaClpUsd.value = usdRate
+                    _error.value = null
+                    Log.d("MonedaViewModel", "Tasa CLP→USD recibida: $usdRate")
                 } else {
-                    Log.e("MonedaViewModel", "No se encontró 'CLP' en rates: ${response.rates}")
-                    _tasaClpUsd.value = null
+                    _error.value = "No se encontró la tasa CLP→USD"
+                    Log.e("MonedaViewModel", "USD no está en conversionRates")
                 }
             } catch (e: Exception) {
                 Log.e("MonedaViewModel", "Error cargando tasa CLP→USD", e)
-                _tasaClpUsd.value = null
+                _error.value = "Error al cargar tasa CLP→USD"
             }
         }
     }
 }
-

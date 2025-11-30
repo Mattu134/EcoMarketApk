@@ -77,7 +77,7 @@ fun DetalleProductoScreen(
     ) { padding ->
 
         producto?.let { p ->
-            val imageUrl = "http://3.17.39.248:8080/api/products/${producto.id}/image"
+            val imageUrl = "http://3.131.85.198:8080/api/products/${producto.id}/image"
 
             Column(
                 modifier = Modifier

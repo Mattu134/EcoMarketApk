@@ -23,13 +23,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.ecomarketapk.viewmodel.AuthViewModel
 import com.example.ecomarketapk.viewmodel.CarritoViewModel
+import com.example.ecomarketapk.viewmodel.MonedaViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -38,14 +42,21 @@ import java.util.Locale
 @Composable
 fun CompraExitosaScreen(
     navController: NavController,
-    carritoViewModel: CarritoViewModel
+    carritoViewModel: CarritoViewModel,
+    authViewModel: AuthViewModel,
+    monedaViewModel: MonedaViewModel
 ) {
     val items = carritoViewModel.ultimaCompra
-
-    val cantidad = items.sumOf { it.second }
-    val subtotal = items.sumOf { (producto, cant) ->
+    val totalConIva = items.sumOf { (producto, cant) ->
         producto.precioClp.toDouble() * cant
     }
+    val subtotal = totalConIva / 1.19
+    val iva = totalConIva - subtotal
+    val cantidad = items.sumOf { it.second }
+    val usuarioActual by authViewModel.usuarioActual
+    val direccionEnvio = usuarioActual?.direccion ?: "Sin dirección registrada"
+    val tasaClpUsd by monedaViewModel.tasaClpUsd.collectAsState()
+    val totalUsd = tasaClpUsd?.let { totalConIva * it }
 
     val formato = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale("es", "CL"))
     val fechaHora = formato.format(Date())
@@ -78,7 +89,6 @@ fun CompraExitosaScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // 🧾 Boleta
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F7F7)),
@@ -93,6 +103,16 @@ fun CompraExitosaScreen(
                     Text(
                         "N° transacción: 0001-0000${(1000..9999).random()}",
                         style = MaterialTheme.typography.bodySmall
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Dirección de envío:",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                    )
+                    Text(
+                        direccionEnvio,
+                        style = MaterialTheme.typography.bodyMedium
                     )
 
                     Spacer(Modifier.height(12.dp))
@@ -150,14 +170,28 @@ fun CompraExitosaScreen(
                     Divider()
                     Spacer(Modifier.height(8.dp))
 
+                    Text("Items: $cantidad", style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        "Items: $cantidad",
+                        "Subtotal: $${String.format(Locale("es", "CL"), "%,.0f", subtotal)}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        "Total pagado: $${String.format(Locale("es", "CL"), "%,.0f", subtotal)}",
+                        "IVA (19%): $${String.format(Locale("es", "CL"), "%,.0f", iva)}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        "Total pagado: $${String.format(Locale("es", "CL"), "%,.0f", totalConIva)}",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
+
+                    if (totalUsd != null) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "≈ ${"%.2f".format(totalUsd)} USD",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
                 }
             }
 

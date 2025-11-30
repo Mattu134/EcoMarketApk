@@ -72,109 +72,119 @@ fun BackOfficeScreen(
             )
         }
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(padding)
-                .padding(horizontal = 20.dp, vertical = 16.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.Top
         ) {
-            Text(
-                text = "Bienvenido al BackOffice",
-                style = MaterialTheme.typography.headlineSmall
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = if (usuarioActual != null) {
-                    "Usuario: ${usuarioActual?.nombre} (${usuarioActual?.rol})"
-                } else {
-                    "Usuario no identificado"
-                },
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Button(
-                    onClick = { navController.navigate("agregarProducto") },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text("Agregar producto")
-                }
-
-                Button(
-                    onClick = { navController.navigate("catalogo") },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    )
-                ) {
-                    Text("Ver catálogo")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Button(
-                onClick = { mostrarInventario.value = !mostrarInventario.value },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                )
-            ) {
+            item {
                 Text(
-                    if (mostrarInventario.value) "Ocultar inventario" else "Ver inventario",
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                    text = "Bienvenido al BackOffice",
+                    style = MaterialTheme.typography.headlineSmall
                 )
-            }
+                Spacer(modifier = Modifier.height(4.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = if (usuarioActual != null) {
+                        "Usuario: ${usuarioActual?.nombre} (${usuarioActual?.rol})"
+                    } else {
+                        "Usuario no identificado"
+                    },
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
-            if (mostrarInventario.value) {
-                InventarioResumen(inventario = inventario)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { navController.navigate("agregarProducto") },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text("Agregar producto")
+                    }
+
+                    Button(
+                        onClick = { navController.navigate("catalogo") },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
+                        )
+                    ) {
+                        Text("Ver catálogo")
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = "Detalle de inventario",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                InventarioLista(
-                    inventario = inventario,
-                    navController = navController
-                )
-            } else {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 24.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    tonalElevation = 2.dp
+                Button(
+                    onClick = { mostrarInventario.value = !mostrarInventario.value },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    )
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Text(
+                        if (mostrarInventario.value) "Ocultar inventario" else "Ver inventario",
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Divider()
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            if (mostrarInventario.value) {
+                // Resumen
+                item {
+                    InventarioResumen(inventario = inventario)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Detalle de inventario",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                items(inventario) { producto ->
+                    InventarioItem(
+                        producto = producto,
+                        onEditar = {
+                            navController.navigate("editarProducto/${producto.id}")
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            } else {
+                item {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        tonalElevation = 2.dp
                     ) {
-                        Text(
-                            "Inventario oculto",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            "Pulsa en \"Ver inventario\" para revisar los productos.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                "Inventario oculto",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                "Pulsa en \"Ver inventario\" para revisar los productos.",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
                 }
             }
@@ -227,32 +237,12 @@ fun InventarioResumen(inventario: List<Producto>) {
 }
 
 @Composable
-fun InventarioLista(
-    inventario: List<Producto>,
-    navController: NavController
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(inventario) { producto ->
-            InventarioItem(
-                producto = producto,
-                onEditar = {
-                    navController.navigate("editarProducto/${producto.id}")
-                }
-            )
-        }
-    }
-}
-
-@Composable
 fun InventarioItem(
     producto: Producto,
     onEditar: () -> Unit
 ) {
     val valorProducto = producto.precioClp * producto.stock
-    val imageUrl = "http://3.17.39.248:8080/api/products/${producto.id}/image"
+    val imageUrl = "http://3.131.85.198:8080/api/products/${producto.id}/image"
     val painter = rememberAsyncImagePainter(model = imageUrl)
 
     Card(

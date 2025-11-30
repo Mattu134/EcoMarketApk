@@ -1,14 +1,13 @@
 package com.example.ecomarketapk.network
 
+import com.example.ecomarketapk.data.ExchangeRateResponse
 import retrofit2.http.GET
-import retrofit2.http.Query
+import retrofit2.http.Path
 
 interface ExchangeRateApi {
 
-    // https://api.frankfurter.app/latest?from=CLP&to=USD
-    @GET("latest")
+    @GET("v6/c9f1a3c3591e1530a066e521/latest/{base}")
     suspend fun getLatestRates(
-        @Query("from") from: String,
-        @Query("to") to: String
+        @Path("base") base: String = "CLP"
     ): ExchangeRateResponse
 }

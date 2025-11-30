@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row // Importación necesaria para el Logo en TopAppBar si no está.
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -67,6 +68,7 @@ import com.example.ecomarketapk.viewmodel.AuthViewModel
 import com.example.ecomarketapk.viewmodel.CarritoViewModel
 import com.example.ecomarketapk.viewmodel.CatalogoViewModel
 import com.example.ecomarketapk.viewmodel.MonedaViewModel
+import kotlinx.coroutines.delay
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,21 +87,28 @@ fun CatalogoScreen(
     val categoriaSeleccionada by viewModel.categoriaSeleccionada.collectAsState()
     val carritoCount by remember { derivedStateOf { carritoViewModel.carrito.values.sum() } }
     val esAdmin by remember { derivedStateOf { authViewModel.usuarioActual.value?.rol == "admin" } }
+    val tasaClpUsd by monedaViewModel.tasaClpUsd.collectAsState()
+    val errorTasa by monedaViewModel.error.collectAsState()
     var showToast by remember { mutableStateOf(false) }
     var toastMsg by remember { mutableStateOf("") }
-    val tasaClpUsd by monedaViewModel.tasaClpUsd.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.cargarProductos()
         monedaViewModel.cargarTasaClpUsd()
+    }
+    LaunchedEffect(showToast) {
+        if (showToast) {
+            delay(1800)
+            showToast = false
+        }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "EcoMarket")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(Modifier.width(8.dp))
                         EcoLogo()
                     }
                 },
@@ -173,6 +182,17 @@ fun CatalogoScreen(
                         .padding(8.dp)
                 )
 
+                errorTasa?.let { msg ->
+                    Text(
+                        text = msg,
+                        color = Color.Red,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -194,7 +214,12 @@ fun CatalogoScreen(
                 }
 
                 if (loading) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .weight(1f, fill = false),
+                        contentAlignment = Alignment.Center
+                    ) {
                         CircularProgressIndicator()
                     }
                 } else {
@@ -207,7 +232,7 @@ fun CatalogoScreen(
                     ) {
                         items(productosFiltrados, key = { it.id }) { producto ->
                             val imageUrl =
-                                "http://3.17.39.248:8080/api/products/${producto.id}/image"
+                                "http://3.131.85.198:8080/api/products/${producto.id}/image"
 
                             ProductoCardGrid(
                                 producto = producto,
@@ -215,7 +240,7 @@ fun CatalogoScreen(
                                 tasaClpUsd = tasaClpUsd,
                                 onAgregar = {
                                     carritoViewModel.agregar(producto)
-                                    toastMsg = "${producto.nombre} agregado con éxito"
+                                    toastMsg = "${producto.nombre} agregado al carrito"
                                     showToast = true
                                 },
                                 onVerDetalle = {
@@ -226,8 +251,34 @@ fun CatalogoScreen(
                     }
                 }
             }
-
+            if (showToast) {
+                CustomEcoToast(
+                    mensaje = toastMsg,
+                    onDismiss = { showToast = false },
+                    modifier = Modifier
+                        .align(Alignment.Center))
+            }
         }
+    }
+}
+@Composable
+fun CustomEcoToast(mensaje: String, modifier: Modifier = Modifier, onDismiss: () -> Unit) {
+    LaunchedEffect(Unit) {
+        delay(1800)
+        onDismiss()
+    }
+    Surface(
+        modifier = modifier.padding(horizontal = 16.dp),
+        color = Color(0xFF4CAF50),
+        shape = RoundedCornerShape(50),
+        shadowElevation = 6.dp
+    ) {
+        Text(
+            text = mensaje,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            color = Color.White,
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 
@@ -236,7 +287,7 @@ private fun CategoryButton(nombre: String, seleccionado: Boolean, onClick: () ->
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF4CAF50),
+            containerColor = if (seleccionado) Color(0xFF2E7D32) else Color(0xFF4CAF50),
             contentColor = Color.White
         )
     ) { Text(nombre) }
@@ -270,7 +321,7 @@ private fun ProductoCardGrid(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f) //
+                    .aspectRatio(1f)
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFFF1F1F1)),
                 contentAlignment = Alignment.Center
@@ -283,6 +334,7 @@ private fun ProductoCardGrid(
                 )
             }
             Spacer(Modifier.height(8.dp))
+
             producto.categoria?.let { categoria ->
                 Text(
                     text = categoria,
@@ -296,6 +348,7 @@ private fun ProductoCardGrid(
                 )
                 Spacer(Modifier.height(4.dp))
             }
+
             Text(
                 producto.nombre,
                 style = MaterialTheme.typography.titleMedium,
@@ -308,6 +361,7 @@ private fun ProductoCardGrid(
                 style = MaterialTheme.typography.titleMedium,
                 color = Color(0xFF388E3C)
             )
+
             if (tasaClpUsd != null) {
                 val precioUsd = precioClp * tasaClpUsd
                 Text(
@@ -347,4 +401,3 @@ private fun ProductoCardGrid(
         }
     }
 }
-

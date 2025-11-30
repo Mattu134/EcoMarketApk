@@ -1,10 +1,13 @@
 package com.example.ecomarketapk.view
 
+import android.app.DatePickerDialog
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Button
@@ -39,6 +43,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,6 +64,9 @@ import com.example.ecomarketapk.viewmodel.BackOfficeViewModel
 import com.example.ecomarketapk.viewmodel.CatalogoViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +78,7 @@ fun AgregarProductoScreen(
     val context = LocalContext.current
 
     var nombre by remember { mutableStateOf("") }
+    // Usar KeyboardType.Decimal para permitir un separador decimal si es necesario
     var precio by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -84,6 +93,10 @@ fun AgregarProductoScreen(
     var fechaExpiracion by remember { mutableStateOf("") }
     var mensajeExito by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
     val categoriasBase = listOf("Frutas", "Verduras", "Bebidas", "Lácteos", "Snacks", "Aseo")
     val categorias = categoriasBase + listOf("Agregar nueva categoría...")
 
@@ -94,23 +107,52 @@ fun AgregarProductoScreen(
         nombreImagen = if (uriSeleccionado != null) "Imagen seleccionada" else "Ninguna imagen seleccionada"
     }
 
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            val hoy = Calendar.getInstance()
+            val anio = hoy.get(Calendar.YEAR)
+            val mes = hoy.get(Calendar.MONTH)
+            val dia = hoy.get(Calendar.DAY_OF_MONTH)
+
+            val datePicker = DatePickerDialog(
+                context,
+                { _, year, month, dayOfMonth ->
+                    val calSeleccionado = Calendar.getInstance().apply {
+                        set(year, month, dayOfMonth)
+                    }
+                    val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    fechaExpiracion = formato.format(calSeleccionado.time)
+                },
+                anio,
+                mes,
+                dia
+            )
+            datePicker.datePicker.minDate = hoy.timeInMillis
+            datePicker.show()
+        }
+    }
+
+
     Scaffold(
         topBar = {
             TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                    }
+                },
                 title = {
                     Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                            }
-                            Text("Agregar Producto")
-                        }
+                        Text("Agregar Producto")
                         Text(
                             text = "Completa los datos para registrar un nuevo producto",
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         }
     ) { padding ->
@@ -123,6 +165,7 @@ fun AgregarProductoScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -137,7 +180,6 @@ fun AgregarProductoScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-
                     Text(
                         "Información del producto",
                         style = MaterialTheme.typography.titleMedium
@@ -153,10 +195,10 @@ fun AgregarProductoScreen(
 
                     OutlinedTextField(
                         value = precio,
-                        onValueChange = { if (it.all { c -> c.isDigit() }) precio = it },
+                        onValueChange = { precio = it.filter { c -> c.isDigit() || c == '.' } },
                         label = { Text("Precio (CLP)") },
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -241,6 +283,7 @@ fun AgregarProductoScreen(
                     )
                 }
             }
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -293,6 +336,7 @@ fun AgregarProductoScreen(
                                                 usandoCategoriaNueva = true
                                                 categoria = "Nueva categoría"
                                             }
+
                                             else -> {
                                                 usandoCategoriaNueva = false
                                                 categoria = opcion
@@ -326,6 +370,8 @@ fun AgregarProductoScreen(
                     )
                 }
             }
+
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -363,9 +409,17 @@ fun AgregarProductoScreen(
 
                     OutlinedTextField(
                         value = fechaExpiracion,
-                        onValueChange = { fechaExpiracion = it },
-                        label = { Text("Fecha de expiración (ej: 2025-11-05)") },
+                        onValueChange = {  },
+                        label = { Text("Fecha de expiración") },
                         singleLine = true,
+                        readOnly = true,
+                        interactionSource = interactionSource,
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.CalendarMonth,
+                                contentDescription = "Seleccionar fecha"
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -377,8 +431,10 @@ fun AgregarProductoScreen(
                         val categoriaFinal = when {
                             usandoCategoriaNueva && nuevaCategoria.isNotBlank() ->
                                 nuevaCategoria.trim()
+
                             categoria == "Selecciona una categoría" ->
                                 ""
+
                             else ->
                                 categoria
                         }
@@ -412,6 +468,7 @@ fun AgregarProductoScreen(
                             fechaExpiracion = ""
                             imagenUri = null
                             nombreImagen = "Ninguna imagen seleccionada"
+                            // Recargar productos
                             catalogoViewModel.cargarProductos()
                         }
                     }
@@ -421,11 +478,11 @@ fun AgregarProductoScreen(
                     .padding(horizontal = 4.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
-                )
+                ),
+                enabled = nombre.isNotBlank() && precio.isNotBlank() && stock.isNotBlank() && imagenUri != null && categoria != "Selecciona una categoría"
             ) {
                 Text("Guardar Producto")
             }
-
             if (mensajeExito) {
                 LaunchedEffect(mensajeExito) {
                     delay(2000)

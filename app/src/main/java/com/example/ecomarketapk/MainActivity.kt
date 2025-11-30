@@ -29,6 +29,7 @@ import com.example.ecomarketapk.viewmodel.AuthViewModel
 import com.example.ecomarketapk.viewmodel.BackOfficeViewModel
 import com.example.ecomarketapk.viewmodel.CarritoViewModel
 import com.example.ecomarketapk.viewmodel.CatalogoViewModel
+import com.example.ecomarketapk.viewmodel.MonedaViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
                     val catalogoViewModel: CatalogoViewModel = viewModel()
                     val carritoViewModel: CarritoViewModel = viewModel()
                     val backOfficeViewModel: BackOfficeViewModel = viewModel()
+                    val monedaViewModel: MonedaViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -60,7 +62,6 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(
                                 navController = navController,
                                 viewModel = authViewModel
-
                             )
                         }
 
@@ -69,7 +70,8 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 viewModel = catalogoViewModel,
                                 carritoViewModel = carritoViewModel,
-                                authViewModel = authViewModel
+                                authViewModel = authViewModel,
+                                monedaViewModel = monedaViewModel
                             )
                         }
 
@@ -87,25 +89,28 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("detalle/{id}") { backStackEntry ->
-                            val id = backStackEntry.arguments
-                                ?.getString("id")
-                                ?.toIntOrNull()
+                        composable(
+                            route = "detalle/{id}",
+                            arguments = listOf(
+                                navArgument("id") { type = NavType.IntType }
+                            )
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getInt("id") ?: return@composable
 
-                            if (id != null) {
-                                DetalleProductoScreen(
-                                    productoId = id,
-                                    viewModel = catalogoViewModel,
-                                    carritoViewModel = carritoViewModel,
-                                    navController = navController
-                                )
-                            }
+                            DetalleProductoScreen(
+                                productoId = id,
+                                viewModel = catalogoViewModel,
+                                carritoViewModel = carritoViewModel,
+                                navController = navController
+                            )
                         }
 
                         composable("compraExitosa") {
                             CompraExitosaScreen(
                                 navController = navController,
-                                carritoViewModel = carritoViewModel
+                                carritoViewModel = carritoViewModel,
+                                authViewModel = authViewModel,
+                                monedaViewModel = monedaViewModel
                             )
                         }
 
@@ -122,6 +127,7 @@ class MainActivity : ComponentActivity() {
                                 authViewModel = authViewModel
                             )
                         }
+
                         composable("agregarProducto") {
                             AgregarProductoScreen(
                                 navController = navController,
@@ -129,6 +135,7 @@ class MainActivity : ComponentActivity() {
                                 catalogoViewModel = catalogoViewModel
                             )
                         }
+
                         composable(
                             route = "editarProducto/{id}",
                             arguments = listOf(
@@ -136,7 +143,6 @@ class MainActivity : ComponentActivity() {
                             )
                         ) { backStackEntry ->
                             val id = backStackEntry.arguments?.getLong("id") ?: 0L
-                            val backOfficeViewModel: BackOfficeViewModel = viewModel()
 
                             EditarProductoScreen(
                                 navController = navController,
