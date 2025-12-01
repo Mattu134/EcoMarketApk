@@ -60,13 +60,11 @@ dependencies {
     implementation("androidx.compose.ui:ui:1.5.0")
     implementation("androidx.compose.ui:ui-graphics:1.5.0")
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.0")
-    implementation("androidx.compose.material3:material3:1.1.1")
-    // --- Grids (LazyVerticalGrid)
-    implementation("androidx.compose.foundation:foundation:1.5.0")
+    implementation("androidx.compose.material3:material3:1.2.1")
+    implementation("androidx.compose.foundation:foundation:1.7.0")
 
-// --- Íconos adicionales (Add, Delete, ShoppingCart, etc.)
+    // --- Íconos adicionales (Add, Delete, ShoppingCart, etc.)
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
-
 
     // --- JSON (Gson) ---
     implementation("com.google.code.gson:gson:2.10.1")
@@ -74,8 +72,16 @@ dependencies {
     // --- Imágenes (Coil) ---
     implementation("io.coil-kt:coil-compose:2.3.0")
 
+    // --- Retrofit ---
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
     // --- Testing ---
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.mockito:mockito-core:5.12.0")
+    testImplementation("org.mockito:mockito-inline:5.2.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1") // Añadido para compatibilidad con Kotlin
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.04.01"))
@@ -84,19 +90,4 @@ dependencies {
     // --- Debug ---
     debugImplementation("androidx.compose.ui:ui-tooling:1.5.0")
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.0")
-
-
-    implementation("androidx.compose.foundation:foundation:1.7.0")
-    implementation("androidx.compose.material:material-icons-extended:1.5.0")
-    implementation("androidx.compose.material3:material3:1.2.1")
-    implementation("io.coil-kt:coil-compose:2.3.0")
-
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
-
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
-
-
-
 }

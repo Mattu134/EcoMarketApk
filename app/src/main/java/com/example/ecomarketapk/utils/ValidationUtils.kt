@@ -1,14 +1,21 @@
 package com.example.ecomarketapk.utils
-import android.util.Patterns
 
+// Applying definitive fix for email validation regex.
 object ValidationUtils {
+
+    // Regex for email validation using a triple-quoted string to avoid escaping issues.
+    // This avoids dependency on the Android framework in unit tests.
+    private val EMAIL_ADDRESS_PATTERN = Regex(
+        """[a-zA-Z0-9+._%\-]{1,256}@[a-zA-Z0-9][a-zA-Z0-9\-]{0,64}(\.[a-zA-Z0-9][a-zA-Z0-9\-]{0,25})+"""
+    )
 
     fun normalizeRut(rut: String): String {
         return rut.replace(Regex("[^0-9kK]"), "").uppercase()
     }
 
     fun isEmailValid(email: String): Boolean {
-        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        if (email.isBlank()) return false
+        return EMAIL_ADDRESS_PATTERN.matches(email)
     }
 
     // Validación de RUT
