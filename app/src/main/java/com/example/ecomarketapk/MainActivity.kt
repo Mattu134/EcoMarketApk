@@ -78,6 +78,7 @@ class MainActivity : ComponentActivity() {
                         composable("carrito") {
                             CarritoScreen(
                                 navController = navController,
+                                authViewModel = authViewModel,
                                 carritoViewModel = carritoViewModel
                             )
                         }
@@ -85,7 +86,8 @@ class MainActivity : ComponentActivity() {
                         composable("perfil") {
                             PerfilScreen(
                                 navController = navController,
-                                authViewModel = authViewModel
+                                authViewModel = authViewModel,
+                                carritoViewModel = carritoViewModel
                             )
                         }
 

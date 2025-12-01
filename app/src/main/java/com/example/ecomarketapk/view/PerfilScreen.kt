@@ -3,7 +3,9 @@ package com.example.ecomarketapk.view
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,46 +39,81 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.ecomarketapk.model.Usuario
 import com.example.ecomarketapk.viewmodel.AuthViewModel
+import com.example.ecomarketapk.viewmodel.CarritoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PerfilScreen(navController: NavController, authViewModel: AuthViewModel) {
+fun PerfilScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    carritoViewModel: CarritoViewModel
+) {
     val context = LocalContext.current
     val usuarioActual = authViewModel.usuarioActual.value
-    var email by remember { mutableStateOf(usuarioActual?.email ?: "") }
-    var nombre by remember { mutableStateOf(usuarioActual?.nombre ?: "") }
-    var direccion by remember { mutableStateOf(usuarioActual?.direccion ?: "") }
-    var nacimiento by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf(usuarioActual?.password ?: "") }
+    LaunchedEffect(usuarioActual) {
+        if (usuarioActual == null) {
+            navController.navigate("login") {
+                popUpTo(navController.graph.startDestinationId) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
+        }
+    }
+
+    if (usuarioActual == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Redirigiendo a inicio de sesión...")
+        }
+        return
+    }
+    var email by remember { mutableStateOf(usuarioActual.email) }
+    var nombre by remember { mutableStateOf(usuarioActual.nombre) }
+    var direccion by remember { mutableStateOf(usuarioActual.direccion) }
+    var rut by remember { mutableStateOf(usuarioActual.rut) }
+    var password by remember { mutableStateOf(usuarioActual.password) }
+    val esInvitado = usuarioActual.rol.equals("invitado", ignoreCase = true)
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Mi Perfil") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Mi Perfil") }
+            )
+        },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
                     selected = false,
-                    onClick = { navController.navigate("catalogo") },
+                    onClick = {
+                        navController.navigate("catalogo") {
+                            launchSingleTop = true
+                        }
+                    },
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") }
                 )
                 NavigationBarItem(
                     selected = true,
-                    onClick = {},
+                    onClick = { /* ya estás en perfil */ },
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") }
                 )
             }
         }
-    ) { padding ->
+    ) { paddingValues ->
 
         Column(
             modifier = Modifier
-                .padding(padding)
+                .padding(paddingValues)
                 .padding(20.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
@@ -89,51 +127,96 @@ fun PerfilScreen(navController: NavController, authViewModel: AuthViewModel) {
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
-                    .clickable { }
+                    .clickable {
+                    }
             )
-            Text("Toca la imagen para cambiarla", style = MaterialTheme.typography.bodySmall)
+
+            Text(
+                "Toca la imagen para cambiarla",
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Rol: ",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                )
+                Text(
+                    text = usuarioActual.rol.uppercase(),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            if (esInvitado) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Estás usando una cuenta invitado. Puedes ver el catálogo, pero no comprar. " +
+                            "Regístrate o inicia sesión para realizar compras.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { },
                 label = { Text("Correo Electrónico") },
                 modifier = Modifier.fillMaxWidth(),
                 readOnly = true
             )
+
+            OutlinedTextField(
+                value = rut,
+                onValueChange = { },
+                label = { Text("RUT") },
+                modifier = Modifier.fillMaxWidth(),
+                readOnly = true
+            )
+
             OutlinedTextField(
                 value = nombre,
                 onValueChange = { nombre = it },
                 label = { Text("Nombre Completo") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !esInvitado
             )
-            OutlinedTextField(
-                value = nacimiento,
-                onValueChange = { nacimiento = it },
-                label = { Text("Fecha de Nacimiento (AAAA-MM-DD)") },
-                modifier = Modifier.fillMaxWidth()
-            )
+
             OutlinedTextField(
                 value = direccion,
                 onValueChange = { direccion = it },
                 label = { Text("Dirección de Envío") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !esInvitado
             )
+
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Contraseña") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                enabled = !esInvitado
             )
+
             Spacer(modifier = Modifier.height(24.dp))
+
             Button(
                 onClick = {
-                    val actualizado = usuarioActual?.copy(
-                        nombre = nombre,
-                        direccion = direccion,
-                        password = password
-                    )
-                    if (actualizado != null) {
+                    if (esInvitado) {
+                        Toast.makeText(
+                            context,
+                            "Los datos de invitado no se pueden editar",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        val actualizado = usuarioActual.copy(
+                            nombre = nombre,
+                            direccion = direccion,
+                            password = password
+                        )
                         val exito = authViewModel.actualizarUsuario(context, actualizado)
                         if (exito) {
                             Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
@@ -142,16 +225,27 @@ fun PerfilScreen(navController: NavController, authViewModel: AuthViewModel) {
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !esInvitado
             ) {
-                Text("Guardar Cambios")
+                Text(if (esInvitado) "No editable (Invitado)" else "Guardar Cambios")
             }
-            TextButton(onClick = {
-                authViewModel.usuarioActual.value = null
-                navController.navigate("login") {
-                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                }
-            }) {
+
+            TextButton(
+                onClick = {
+                    authViewModel.logout()
+                    carritoViewModel.limpiar()
+
+
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
+                modifier = Modifier.padding(top = 12.dp)
+            ) {
                 Text("Cerrar Sesión")
             }
         }

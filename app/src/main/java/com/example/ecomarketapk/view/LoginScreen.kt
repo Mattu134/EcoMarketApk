@@ -79,19 +79,12 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-
         Button(
             onClick = {
                 if (viewModel.login(context, email, password)) {
                     val usuario = viewModel.usuarioActual.value
-                    if (usuario?.rol == "admin") {
-                        navController.navigate("catalogo") {
-                            popUpTo("login") { inclusive = true }
-                        }
-                    } else {
-                        navController.navigate("catalogo") {
-                            popUpTo("login") { inclusive = true }
-                        }
+                    navController.navigate("catalogo") {
+                        popUpTo("login") { inclusive = true }
                     }
                     viewModel.clearMensaje()
                 }
@@ -99,6 +92,19 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Entrar")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = {
+                viewModel.loginInvitado()
+                navController.navigate("catalogo") {
+                    popUpTo("login") { inclusive = true }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Entrar como invitado")
         }
 
         TextButton(

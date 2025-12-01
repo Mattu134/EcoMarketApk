@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.ecomarketapk.data.ProductoResponse
+import com.example.ecomarketapk.utils.SaludUtils
 import com.example.ecomarketapk.viewmodel.CarritoViewModel
 import com.example.ecomarketapk.viewmodel.CatalogoViewModel
 import java.util.Locale
@@ -78,6 +81,9 @@ fun DetalleProductoScreen(
 
         producto?.let { p ->
             val imageUrl = "http://3.131.85.198:8080/api/products/${producto.id}/image"
+
+            val ratingSalud = SaludUtils.calcularSaludRating(p)
+            val textoSalud = SaludUtils.textoNivelSalud(ratingSalud)
 
             Column(
                 modifier = Modifier
@@ -135,6 +141,30 @@ fun DetalleProductoScreen(
                             text = p.nombre,
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                         )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+                        ) {
+                            for (i in 1..5) {
+                                val filled = i <= ratingSalud
+                                Icon(
+                                    imageVector = if (filled) Icons.Default.Star else Icons.Default.StarBorder,
+                                    contentDescription = null,
+                                    tint = when (ratingSalud) {
+                                        5, 4 -> Color(0xFF2E7D32)
+                                        3 -> Color(0xFFF9A825)
+                                        else -> Color(0xFFC62828)
+                                    },
+                                    modifier = Modifier.height(18.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = textoSalud,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
 
                         Text(
                             text = p.descripcion ?: "Sin descripción disponible.",
@@ -181,6 +211,7 @@ fun DetalleProductoScreen(
                         }
                     }
                 }
+
                 Button(
                     onClick = {
                         carritoViewModel.agregar(p)
@@ -251,7 +282,6 @@ private fun SimplePill(
 fun OpinionesList() {
     val opiniones = listOf(
         Triple("Excelente producto, llegó a tiempo y en buen estado.", 5, "Juan"),
-
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -11,16 +11,18 @@ import com.example.ecomarketapk.repository.ProductoRepository
 class CarritoViewModel(
     private val productoRepository: ProductoRepository = ProductoRepository()
 ) : ViewModel() {
-
     private val _carrito: SnapshotStateMap<ProductoResponse, Int> = mutableStateMapOf()
     val carrito: Map<ProductoResponse, Int> get() = _carrito
 
     private val _ultimaCompra = mutableStateOf<List<Pair<ProductoResponse, Int>>>(emptyList())
     val ultimaCompra: List<Pair<ProductoResponse, Int>> get() = _ultimaCompra.value
 
+    val procesandoPago = mutableStateOf(false)
+
     fun agregar(producto: ProductoResponse) {
         val actual = _carrito[producto] ?: 0
         if (producto.stock > 0 && actual >= producto.stock) return
+
         _carrito[producto] = actual + 1
     }
 
@@ -52,8 +54,11 @@ class CarritoViewModel(
         val haySinStock = _carrito.entries.any { (producto, cantidad) ->
             cantidad > producto.stock || producto.stock <= 0
         }
-
         if (haySinStock) return false
+
+        val subtotal = subtotalClp()
+        if (subtotal <= 0.0) return false
+
         return true
     }
 
@@ -64,20 +69,21 @@ class CarritoViewModel(
     fun limpiar() {
         _carrito.clear()
     }
-
-
     suspend fun procesarPagoYActualizarStock(): Boolean {
-        if (!pagar()) return false
+        if (procesandoPago.value) return false
+        procesandoPago.value = true
 
         return try {
+            if (!pagar()) return false
+
             val items = _carrito.entries.map { (producto, cantidad) ->
                 StockRequest(
                     productId = producto.id,
                     cantidadVendida = cantidad
                 )
             }
-            val actualizados = productoRepository.actualizarStock(items)
 
+            val actualizados = productoRepository.actualizarStock(items)
             actualizados.forEach { actualizado ->
                 val entrada = _carrito.entries.find { it.key.id == actualizado.id }
                 if (entrada != null) {
@@ -86,12 +92,15 @@ class CarritoViewModel(
                     _carrito[actualizado] = cantidad
                 }
             }
+
             guardarUltimaCompra()
 
             true
         } catch (e: Exception) {
             e.printStackTrace()
             false
+        } finally {
+            procesandoPago.value = false
         }
     }
 }

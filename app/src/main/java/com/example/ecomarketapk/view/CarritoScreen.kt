@@ -52,6 +52,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.ecomarketapk.data.ProductoResponse
 import com.example.ecomarketapk.utils.EcoLogo
+import com.example.ecomarketapk.viewmodel.AuthViewModel
 import com.example.ecomarketapk.viewmodel.CarritoViewModel
 import com.example.ecomarketapk.viewmodel.MonedaViewModel
 import kotlinx.coroutines.launch
@@ -63,14 +64,18 @@ import java.util.Locale
 fun CarritoScreen(
     navController: NavController,
     carritoViewModel: CarritoViewModel,
+    authViewModel: AuthViewModel,
     monedaViewModel: MonedaViewModel = viewModel()
 ) {
     val carritoEntries = carritoViewModel.carrito.entries.toList()
     val tasaClpUsd by monedaViewModel.tasaClpUsd.collectAsState()
     val errorTasa by monedaViewModel.error.collectAsState()
     var mostrarUsd by remember { mutableStateOf(false) }
-
     val scope = rememberCoroutineScope()
+    val usuarioActual = authViewModel.usuarioActual.value
+    val esInvitado = usuarioActual?.rol.equals("invitado", ignoreCase = true)
+    val carritoVacio = carritoEntries.isEmpty()
+    val puedePagar = usuarioActual != null && !esInvitado && !carritoVacio
 
     LaunchedEffect(Unit) {
         monedaViewModel.cargarTasaClpUsd()
@@ -170,7 +175,6 @@ fun CarritoScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // RESUMEN
             val subtotalClp = carritoViewModel.subtotalClp()
             val tasa = tasaClpUsd
 
@@ -225,8 +229,17 @@ fun CarritoScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+            if (!carritoVacio && !puedePagar) {
+                Text(
+                    text = "Debes iniciar sesión para poder pagar.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Red,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+            }
 
+            Spacer(modifier = Modifier.height(4.dp))
             Button(
                 onClick = {
                     scope.launch {
@@ -239,7 +252,8 @@ fun CarritoScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(999.dp)
+                shape = RoundedCornerShape(999.dp),
+                enabled = puedePagar
             ) {
                 Text("Pagar")
             }
