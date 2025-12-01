@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyColumn // Se sigue usando LazyColumn para los ítems
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState // Importar para el scroll
+import androidx.compose.foundation.verticalScroll // Importar para el scroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Button
@@ -68,7 +70,8 @@ fun CompraExitosaScreen(
             Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()), // <--- MODIFICACIÓN CLAVE
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -136,7 +139,7 @@ fun CompraExitosaScreen(
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp),
+                                .height(200.dp), // <--- SE MANTIENE POR BUENA PRÁCTICA en un Card con scroll
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             items(items) { (producto, cantidadItem) ->
@@ -170,6 +173,7 @@ fun CompraExitosaScreen(
                     Divider()
                     Spacer(Modifier.height(8.dp))
 
+                    // Esta sección ahora será visible gracias al scroll aplicado al Column principal.
                     Text("Items: $cantidad", style = MaterialTheme.typography.bodyMedium)
                     Text(
                         "Subtotal: $${String.format(Locale("es", "CL"), "%,.0f", subtotal)}",
