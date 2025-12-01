@@ -8,9 +8,9 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 
-object UserRepository {
+class UserRepository {
 
-    private const val JSON_FILE_NAME = "usuarios.json"
+    private val JSON_FILE_NAME = "usuarios.json"
     private val gson = Gson()
 
     private fun getRuntimeFile(context: Context): File {

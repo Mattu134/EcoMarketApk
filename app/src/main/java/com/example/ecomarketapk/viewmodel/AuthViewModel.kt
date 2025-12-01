@@ -7,7 +7,7 @@ import com.example.ecomarketapk.model.Usuario
 import com.example.ecomarketapk.repository.UserRepository
 import com.example.ecomarketapk.utils.ValidationUtils
 
-class AuthViewModel : ViewModel() {
+class AuthViewModel(private val userRepository: UserRepository = UserRepository()) : ViewModel() {
 
     val usuarioActual = mutableStateOf<Usuario?>(null)
     val mensaje = mutableStateOf("")
@@ -21,7 +21,7 @@ class AuthViewModel : ViewModel() {
             mensaje.value = "Email inválido"
             return false
         }
-        val usuario = UserRepository.login(context, email, password)
+        val usuario = userRepository.login(context, email, password)
         return if (usuario != null) {
             usuarioActual.value = usuario
             true
@@ -59,8 +59,16 @@ class AuthViewModel : ViewModel() {
             password = password,
             rol = "cliente"
         )
-        val exito = UserRepository.registrarUsuario(context, usuario)
+        val exito = userRepository.registrarUsuario(context, usuario)
         mensaje.value = if (exito) "Usuario registrado correctamente" else "El usuario ya existe"
+        if (exito) {
+            usuarioActual.value = usuario
+        }
+        return exito
+    }
+
+    fun actualizarUsuario(context: Context, usuario: Usuario): Boolean {
+        val exito = userRepository.actualizarUsuario(context, usuario)
         if (exito) {
             usuarioActual.value = usuario
         }

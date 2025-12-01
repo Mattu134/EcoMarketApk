@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.ecomarketapk.model.Usuario
-import com.example.ecomarketapk.repository.UserRepository
 import com.example.ecomarketapk.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,7 +98,8 @@ fun PerfilScreen(navController: NavController, authViewModel: AuthViewModel) {
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Correo Electrónico") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                readOnly = true
             )
             OutlinedTextField(
                 value = nombre,
@@ -122,43 +122,34 @@ fun PerfilScreen(navController: NavController, authViewModel: AuthViewModel) {
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Nueva Contraseña") },
+                label = { Text("Contraseña") },
                 modifier = Modifier.fillMaxWidth()
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = {
-                    if (usuarioActual != null) {
-                        val actualizado = Usuario(
-                            nombre = nombre,
-                            email = email,
-                            direccion = direccion,
-                            rut = usuarioActual.rut,
-                            password = password.ifEmpty { usuarioActual.password },
-                            rol = usuarioActual.rol
-                        )
-
-                        val exito = UserRepository.actualizarUsuario(context, actualizado)
+                    val actualizado = usuarioActual?.copy(
+                        nombre = nombre,
+                        direccion = direccion,
+                        password = password
+                    )
+                    if (actualizado != null) {
+                        val exito = authViewModel.actualizarUsuario(context, actualizado)
                         if (exito) {
-                            authViewModel.usuarioActual.value = actualizado
-                            Toast.makeText(context, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "No se pudo actualizar el usuario", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Error al actualizar", Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Guardar Cambios")
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
             TextButton(onClick = {
                 authViewModel.usuarioActual.value = null
                 navController.navigate("login") {
-                    popUpTo("catalogo") { inclusive = true }
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
                 }
             }) {
                 Text("Cerrar Sesión")
